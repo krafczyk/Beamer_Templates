@@ -1,6 +1,10 @@
 # Makefile for local testing of the Overleaf-style Beamer template
 # Requires: latexmk + a TeX distribution (TeX Live / MacTeX / MikTeX)
 
+THEME_DIR := theme
+# Put theme/ first in TeX's search path (// = recursive). Trailing ':' keeps default paths.
+TEXINPUTS_PREFIX := $(THEME_DIR)//:
+
 MAIN      := main.tex
 OUTDIR    := build
 ENGINE    ?= pdflatex
@@ -29,13 +33,16 @@ $(OUTDIR):
 	mkdir -p $(OUTDIR)
 
 pdf: $(OUTDIR)
+	TEXINPUTS="$(TEXINPUTS_PREFIX)$$TEXINPUTS" \
 	$(LATEXMK) $(LATEXMK_ENGINE) $(LATEXMK_COMMON) -outdir=$(OUTDIR) $(MAIN)
 
 watch: $(OUTDIR)
+	TEXINPUTS="$(TEXINPUTS_PREFIX)$$TEXINPUTS" \
 	$(LATEXMK) $(LATEXMK_ENGINE) $(LATEXMK_COMMON) -pvc -outdir=$(OUTDIR) $(MAIN)
 
 clean:
-	-$(LATEXMK) -C -outdir=$(OUTDIR) $(MAIN)
+	TEXINPUTS="$(TEXINPUTS_PREFIX)$$TEXINPUTS" \
+	$(LATEXMK) -C -outdir=$(OUTDIR) $(MAIN)
 
 distclean: clean
 	-rm -rf $(OUTDIR)
