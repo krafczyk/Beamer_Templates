@@ -1,0 +1,33 @@
+\documentclass{beamer}
+
+% Let TeX find your theme *.sty files in ./theme
+\usepackage{import}
+\makeatletter
+\def\input@path{{theme/}}
+\makeatother
+
+% Let graphicx find figures + theme assets
+\usepackage{graphicx}
+\graphicspath{{figs/}{theme/assets/}}
+
+% Use the theme by name (beamerthemencsa.sty must be in theme/)
+\usetheme{ncsa}
+
+\title{Title}
+\author{Author}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+\subimport{content/}{talk.tex}
+
+% backups
+\backupbegin
+\backupannounceslide
+\subimport{content/}{backup.tex}
+
+\end{document}

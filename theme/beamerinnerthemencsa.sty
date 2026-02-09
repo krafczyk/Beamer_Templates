@@ -1,0 +1,72 @@
+\mode<presentation>
+
+\setbeamertemplate{background}{
+	\ifbackupannounce {
+		\begin{tikzpicture} [remember picture,overlay]
+			\node[inner sep=0pt,outer sep=0pt] at (current page.center) {
+				\includegraphics[width=\paperwidth,keepaspectratio]{ncsa_title_background.jpg}
+			};
+			\node at ($(current page.center)+(0cm,1.8cm)$) {
+				\begin{beamercolorbox}{title page header}
+				\begin{center}
+				\usebeamerfont{title page header}Backup Slides
+				\end{center}
+				\end{beamercolorbox}
+			};
+		\end{tikzpicture}
+	} \else {
+		\ifnum\thepage=1\relax {
+			\begin{tikzpicture}[remember picture,overlay]
+				\node[inner sep=0pt,outer sep=0pt] at (current page.center) {
+					\includegraphics[width=\paperwidth,keepaspectratio]{ncsa_title_background.jpg}
+
+				};
+			\end{tikzpicture}
+		} \else {
+			\begin{tikzpicture}[remember picture,overlay]
+				\node[inner sep=0pt,outer sep=0pt] at (current page.center) {
+					\includegraphics[width=\paperwidth,keepaspectratio]{ncsa_generic_slide_background.jpg}
+				};
+			\end{tikzpicture}
+		} \fi
+	} \fi
+}
+
+% Title page
+\defbeamertemplate*{title page}{ncsa}[1][] {
+	\begin{tikzpicture} [remember picture,overlay]
+		\node at ($(current page.center)+(0cm,1.8cm)$) {
+			\begin{beamercolorbox}[wd=12cm,#1]{title page header}
+				\begin{center}
+				\usebeamerfont{title page header}\inserttitle
+				\end{center}
+			\end{beamercolorbox}
+		};
+		\node[inner sep=0pt,outer sep=0pt,right] at ($(current page.south west)+(0.5cm,2.5cm)$) {
+			\begin{minipage}{7cm}
+				\begin{beamercolorbox}[wd=7cm,#1]{author}
+					\usebeamerfont{author}\insertauthor
+				\end{beamercolorbox}
+			\end{minipage}
+		};
+		\node[inner sep=0pt,outer sep=0pt,left] at ($(current page.south east)+(-0.5cm,2.5cm)$){
+			\begin{minipage}{4cm}
+				\begin{beamercolorbox}[wd=4cm,#1]{date}
+					\raggedleft
+					\usebeamerfont{date}\insertdate
+				\end{beamercolorbox}
+			\end{minipage}
+		};
+	\end{tikzpicture}
+}
+
+\setbeamertemplate{enumerate items}[default]
+\setbeamertemplate{enumerate subitems}[default]
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{itemize subitems}[dash]
+\setbeamertemplate{sections/subsections in toc}[circle]
+\setbeamertemplate{itemize/enumerate body begin}{\Large}
+\setbeamertemplate{itemize/enumerate subbody begin}{\normalsize}
+
+\mode
+<all>
