@@ -15,17 +15,19 @@
 
 % Footline
 \setbeamertemplate{footline} {
-	\ifnum\thepage>1\relax {
-		\begin{tikzpicture}[remember picture,overlay]
-			\node[right] at ($(current page.south west)+(0.7cm,0.35cm)$) {
-				\includegraphics[width=2.5cm,keepaspectratio]{illinois_banner.png}
-			};
-			\node[above] at ($(current page.south)+(0cm,0.1cm)$) {
-				\usebeamerfont{footline}\insertframenumber\slash\inserttotalframenumber
-			};
-		\end{tikzpicture}
-	} \fi
+  % Hide on title and on the backup announce slide
+  \ifbackupannounce\relax\else
+    \ifnum\value{framenumber}>1\relax
+      \begin{tikzpicture}[remember picture,overlay]
+        \node[right] at ($(current page.south west)+(0.7cm,0.35cm)$) {
+          \includegraphics[width=2.5cm,keepaspectratio]{illinois_banner.png}
+        };
+        \node[above] at ($(current page.south)+(0cm,0.1cm)$) {
+          \usebeamerfont{footline}\insertframenumber/\insertmainframenumber
+        };
+      \end{tikzpicture}
+    \fi
+  \fi
 }
 
-\mode
-<all>
+\mode<all>

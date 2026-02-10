@@ -8,10 +8,22 @@
 
 % Let graphicx find figures + theme assets
 \usepackage{graphicx}
-\graphicspath{{figs/}{theme/assets/}}
 
 % Use the theme by name (beamerthemencsa.sty must be in theme/)
 \usetheme{ncsa}
+
+\makeatletter
+\typeout{=== Ginput@path (after usetheme) = \meaning\Ginput@path ===}
+\makeatother
+
+\makeatletter
+\g@addto@macro\Ginput@path{{figs/}}
+\makeatother
+
+\makeatletter
+\typeout{=== Ginput@path (after append) = \meaning\Ginput@path ===}
+\makeatother
+
 
 \title{Title}
 \author{Author}
