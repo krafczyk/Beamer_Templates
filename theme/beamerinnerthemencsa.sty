@@ -2,15 +2,15 @@
 
 % Pick background image file
 \newcommand*{\ncsabackgroundfile}{%
-  \ifbackupannounce%
-    ncsa_title_background.jpg%
-  \else%
-    \ifnum\value{framenumber}=1\relax%
-      ncsa_title_background.jpg%
-    \else%
-      ncsa_generic_slide_background.jpg%
-    \fi%
-  \fi%
+\ifbackupannounce%
+ncsa_title_background.jpg%
+\else%
+\ifnum\value{framenumber}=1\relax%
+ncsa_title_background.jpg%
+\else%
+ncsa_generic_slide_background.jpg%
+\fi%
+\fi%
 }
 
 \newcommand{\ncsaoptcomma}[1]{%
@@ -20,19 +20,16 @@
 \setbeamertemplate{background}{%
   \begin{tikzpicture}[remember picture,overlay]
     \node[inner sep=0pt,outer sep=0pt] at (current page.center) {%
-      \includegraphics[width=\paperwidth,keepaspectratio]{\ncsabackgroundfile}%
+      \includegraphics[width=\paperwidth,keepaspectratio]{ncsa_generic_slide_background.jpg}%
     };
   \end{tikzpicture}%
 }
 
 % Title page
 \defbeamertemplate{title page}{ncsa}[1][]{%
-  \begin{tikzpicture}[remember picture,overlay]
+ \begin{tikzpicture}[remember picture,overlay]
     \node at ($(current page.center)+(0cm,1.8cm)$) {%
-      \begin{beamercolorbox}[
-        wd=12cm%
-        \ncsaoptcomma{#1}%
-      ]{title page header}
+      \begin{beamercolorbox}[wd=12cm]{title page header}
         \begin{center}
           \usebeamerfont{title page header}\inserttitle
         \end{center}
@@ -59,7 +56,7 @@
         \end{beamercolorbox}
       \end{minipage}
     };
-  \end{tikzpicture}%
+ \end{tikzpicture}%
 }
 \setbeamertemplate{title page}[ncsa]
 
