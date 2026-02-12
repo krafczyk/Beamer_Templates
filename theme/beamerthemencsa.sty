@@ -69,4 +69,36 @@
 % Backup convenience
 \newcommand{\backupbegin}{\appendix}
 
+% --- Section slide toggle ---
+\newif\ifBTKSectionSlides
+\BTKSectionSlidestrue  % default ON (set false to disable)
+
+\AtBeginSection[]{
+  \ifBTKSectionSlides
+    \begin{frame}[plain,noframenumbering,layout=full]
+      \begin{BTKRegion}{main}
+        \centering
+        \vfill
+        {\LARGE \insertsectionhead\par}
+        \vfill
+        % Optional: show TOC with current section highlighted
+        \tableofcontents[currentsection,hideothersubsections]
+      \end{BTKRegion}
+    \end{frame}
+  \fi
+}
+
+\AtBeginSubsection[]{
+  \ifBTKSectionSlides
+    \begin{frame}[plain,noframenumbering,layout=full]
+      \begin{BTKRegion}{main}
+        \centering
+        \vfill
+        {\Large \insertsubsectionhead\par}
+        \vfill
+      \end{BTKRegion}
+    \end{frame}
+  \fi
+}
+
 \mode<all>
