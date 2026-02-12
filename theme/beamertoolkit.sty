@@ -40,6 +40,24 @@
 \setlength{\BTKImgW}{0.33\paperwidth}
 
 % ----------------------------
+% Debug mode (draw boxes around BTK-controlled geometry)
+% ----------------------------
+\newif\ifBTKDebug
+\BTKDebugfalse
+
+% You can override these from main.tex if desired
+\def\BTKDebugColor{black}
+\def\BTKDebugLineWidth{0.6pt}
+
+% Helper: draw a rectangle between two named coordinates
+\newcommand{\BTK@dbgrect}[2]{%
+  \ifBTKDebug%
+    \draw[draw=\BTKDebugColor,line width=\BTKDebugLineWidth]
+      (#1) rectangle (#2);%
+  \fi%
+}
+
+% ----------------------------
 % Background registry
 % ----------------------------
 \newcommand{\BTKDeclareBackground}[2]{%
@@ -193,6 +211,33 @@
   \BTK@applylayout%
 }
 
+% Draw debug boxes for core geometry + known regions
+\newcommand{\BTKDebugDraw}{%
+  \ifBTKDebug%
+    % Page / body / header / footer
+    \BTK@dbgrect{\BTKPageAnchor{sw}}{\BTKPageAnchor{ne}}%
+    \BTK@dbgrect{\BTKBodyAnchor{sw}}{\BTKBodyAnchor{ne}}%
+    \BTK@dbgrect{\BTKHeaderAnchor{sw}}{\BTKHeaderAnchor{ne}}%
+    \BTK@dbgrect{\BTKFooterAnchor{sw}}{\BTKFooterAnchor{ne}}%
+    % Common regions (only draw if they exist for this layout)
+    \@ifundefined{pgf@sh@ns@\BTKRegionAnchor{main}{nw}}{}{%
+      \BTK@dbgrect{\BTKRegionAnchor{main}{sw}}{\BTKRegionAnchor{main}{ne}}%
+    }%
+    \@ifundefined{pgf@sh@ns@\BTKRegionAnchor{left}{nw}}{}{%
+      \BTK@dbgrect{\BTKRegionAnchor{left}{sw}}{\BTKRegionAnchor{left}{ne}}%
+    }%
+    \@ifundefined{pgf@sh@ns@\BTKRegionAnchor{right}{nw}}{}{%
+      \BTK@dbgrect{\BTKRegionAnchor{right}{sw}}{\BTKRegionAnchor{right}{ne}}%
+    }%
+    \@ifundefined{pgf@sh@ns@\BTKRegionAnchor{text}{nw}}{}{%
+      \BTK@dbgrect{\BTKRegionAnchor{text}{sw}}{\BTKRegionAnchor{text}{ne}}%
+    }%
+    \@ifundefined{pgf@sh@ns@\BTKRegionAnchor{img}{nw}}{}{%
+      \BTK@dbgrect{\BTKRegionAnchor{img}{sw}}{\BTKRegionAnchor{img}{ne}}%
+    }%
+  \fi%
+}
+
 % ----------------------------
 % Master background: defines anchors + applies layout + draws background
 % ----------------------------
@@ -212,6 +257,8 @@
           \includegraphics[width=\paperwidth,keepaspectratio]{\BTK@tmpbg}%
         };
     \fi\fi
+    % DEBUG overlays
+    \BTKDebugDraw
   \end{tikzpicture}%
 }
 
@@ -253,7 +300,14 @@
   \begin{tikzpicture}[remember picture,overlay]%
     \BTKOverlaySetup%
     \node[anchor=north west,inner sep=0pt,outer sep=0pt,\BTK@regionopts]%
-      at (\BTKRegionAnchor{\BTK@regionname}{nw}) {\usebox{\BTK@regionbox}};%
+      (BTK@placed@node) at (\BTKRegionAnchor{\BTK@regionname}{nw}) {\usebox{\BTK@regionbox}};%
+    \ifBTKDebug%
+      % Outline the region itself (not the content node), so you see expected bounds
+      \BTK@dbgrect{\BTKRegionAnchor{\BTK@regionname}{sw}}{\BTKRegionAnchor{\BTK@regionname}{ne}}%
+      % Outline the actual placed content box too (useful for inner sep / shifts)
+      \draw[draw=\BTKDebugColor,line width=\BTKDebugLineWidth]
+        (BTK@placed@node.south west) rectangle (BTK@placed@node.north east);%
+    \fi%
   \end{tikzpicture}%
 }
 
