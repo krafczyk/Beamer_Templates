@@ -1,85 +1,14 @@
 % content/backup.tex
-% Backup content: frames only.
-% These will appear after \backupbegin + \backupannounceslide in main.tex.
 
 \section{Backup}
 
-\begin{frame}{Backup: extra figure}
-  \begin{figure}
+\begin{frame}[layout=img-right]{Ablation / detail}
+  \begin{BTKRegion}{text}
+    \textbf{Extra detail}\\
+    Put derivations / sweeps here.
+  \end{BTKRegion}
+  \begin{BTKRegion}{img}
     \centering
-    % Put any placeholder image at figs/example_detail.png
-    \includegraphics[width=0.90\linewidth]{example_detail.png}
-    \caption{Extra plot / parameter sweep / ablation.}
-  \end{figure}
-\end{frame}
-
-\begin{frame}{Backup: derivation details}
-  \begin{block}{Starting point}
-    \[
-      \mathcal{L}(\theta) = \sum_{i=1}^N \left\| y_i - f_\theta(x_i) \right\|^2
-    \]
-  \end{block}
-
-  \begin{itemize}
-    \item Expand or differentiate as needed.
-    \item Keep main talk focused on assumptions + conclusions.
-  \end{itemize}
-
-  \begin{exampleblock}{One useful intermediate}
-    \[
-      \nabla_\theta \mathcal{L}(\theta) = -2 \sum_{i=1}^N
-      \left(y_i - f_\theta(x_i)\right)\nabla_\theta f_\theta(x_i)
-    \]
-  \end{exampleblock}
-\end{frame}
-
-\begin{frame}[fragile]{Backup: longer code snippet}
-\begin{verbatim}
-# pseudo-pipeline
-def run(config):
-    data = load_data(config.path)
-    feats = featurize(data, fs=config.fs)
-    model = train(feats, lr=config.lr, steps=config.steps)
-    report(model, feats)
-
-# when you discuss implementation details,
-# point to this slide and speak to only 1-2 lines.
-\end{verbatim}
-\end{frame}
-
-\begin{frame}{Backup: “FAQ” slide}
-  \begin{itemize}
-    \item \textbf{Q:} What happens if assumption X fails?
-      \begin{itemize}
-        \item \textbf{A:} We observe Y; mitigation is Z.
-      \end{itemize}
-    \item \textbf{Q:} How sensitive is it to parameter $\lambda$?
-      \begin{itemize}
-        \item \textbf{A:} See the sweep plot (previous backup slide).
-      \end{itemize}
-    \item \textbf{Q:} Runtime / memory?
-      \begin{itemize}
-        \item \textbf{A:} Provide order-of-growth and one benchmark.
-      \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Backup: extra diagram}
-  \centering
-  \begin{tikzpicture}[node distance=1.4cm,>=latex]
-    \node (d) [draw, rounded corners, minimum width=3.2cm, minimum height=0.95cm] {Dataset};
-    \node (p) [draw, rounded corners, below of=d, minimum width=3.2cm, minimum height=0.95cm] {Preprocess};
-    \node (m) [draw, rounded corners, below of=p, minimum width=3.2cm, minimum height=0.95cm] {Model};
-    \node (e) [draw, rounded corners, below of=m, minimum width=3.2cm, minimum height=0.95cm] {Eval};
-
-    \draw[->, thick] (d) -- (p);
-    \draw[->, thick] (p) -- (m);
-    \draw[->, thick] (m) -- (e);
-
-    \node (note) [right=2.6cm of m, align=left] {\small
-      Notes:\\
-      \(\bullet\) where you mention corner cases\\
-      \(\bullet\) or implementation details};
-    \draw[->] (note.west) -- (m.east);
-  \end{tikzpicture}
+    \includegraphics[width=\linewidth]{example_detail.png}
+  \end{BTKRegion}
 \end{frame}

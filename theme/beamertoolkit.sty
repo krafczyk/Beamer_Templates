@@ -1,0 +1,283 @@
+% theme/beamertoolkit.sty
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamertoolkit}[2026/02/10 Beamer toolkit: backgrounds + layouts]
+
+\RequirePackage{etoolbox}
+\RequirePackage{graphicx}
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+
+\makeatletter
+
+% ----------------------------
+% Public anchor-name helpers
+% ----------------------------
+% Use inside TikZ like: (\BTKBodyAnchor{nw}) or (\BTKRegionAnchor{text}{c})
+\newcommand{\BTKPageAnchor}[1]{BTK@page@#1}     % nw ne sw se c
+\newcommand{\BTKBodyAnchor}[1]{BTK@body@#1}
+\newcommand{\BTKHeaderAnchor}[1]{BTK@header@#1}
+\newcommand{\BTKFooterAnchor}[1]{BTK@footer@#1}
+\newcommand{\BTKRegionAnchor}[2]{BTK@region@#1@#2} % region name, anchor
+
+% ----------------------------
+% Theme/layout parameters
+% ----------------------------
+\newlength{\BTKHeaderH}
+\newlength{\BTKFooterH}
+\newlength{\BTKGutter}
+\newlength{\BTKImgW}
+
+\setlength{\BTKHeaderH}{0pt}
+\setlength{\BTKFooterH}{0pt}
+\setlength{\BTKGutter}{0.8cm}
+\setlength{\BTKImgW}{0.33\paperwidth}
+
+% ----------------------------
+% Background registry
+% ----------------------------
+\newcommand{\BTKDeclareBackground}[2]{%
+  \@namedef{BTK@bgfile@#1}{#2}%
+}
+\newcommand{\BTK@lookupbgfile}[1]{%
+  \@ifundefined{BTK@bgfile@#1}{%
+    \PackageError{beamerkit}{Unknown background `#1`}%
+      {Declare it with \string\BTKDeclareBackground\space before use.}%
+    \def\BTK@bgfile{}%
+  }{%
+    \edef\BTK@bgfile{\csname BTK@bgfile@#1\endcsname}%
+  }%
+}
+
+% Background state
+\def\BTK@mode@image{image}
+\def\BTK@mode@color{color}
+\def\BTK@mode@none{none}
+
+\def\BTK@bgmode{image}
+\def\BTK@bgfile{}
+\def\BTK@bgcolor{black}
+\def\BTK@bgopacity{1}
+
+\def\BTK@defaultbg{default}
+\def\BTK@titlebg{title}
+\def\BTK@appendixbg{appendix}
+
+\newcommand{\BTKSetDefaultBackground}[1]{%
+  \def\BTK@defaultbg{#1}%
+  \BTKUseBackground{#1}%
+}
+\newcommand{\BTKSetTitleBackground}[1]{\def\BTK@titlebg{#1}}
+\newcommand{\BTKSetAppendixBackground}[1]{\def\BTK@appendixbg{#1}}
+
+\newcommand{\BTKUseBackground}[1]{%
+  \def\BTK@bgmode{\BTK@mode@image}%
+  \BTK@lookupbgfile{#1}%
+}
+\newcommand{\BTKUseBackgroundFile}[1]{%
+  \def\BTK@bgmode{\BTK@mode@image}%
+  \edef\BTK@bgfile{#1}%
+}
+\newcommand{\BTKUseBackgroundColor}[1]{%
+  \def\BTK@bgmode{\BTK@mode@color}%
+  \def\BTK@bgcolor{#1}%
+}
+\newcommand{\BTKNoBackground}{\def\BTK@bgmode{\BTK@mode@none}}
+\newcommand{\BTKSetBackgroundOpacity}[1]{\def\BTK@bgopacity{#1}}
+
+% ----------------------------
+% Layout registry
+% ----------------------------
+\newcommand{\BTKDeclareLayout}[2]{%
+  \@namedef{BTK@layout@#1}{#2}%
+}
+\def\BTK@layout{full}
+\def\BTK@defaultlayout{full}
+\newcommand{\BTKSetDefaultLayout}[1]{%
+  \def\BTK@defaultlayout{#1}%
+  \def\BTK@layout{#1}%
+}
+
+\newcommand{\BTK@applylayout}{%
+  \@ifundefined{BTK@layout@\BTK@layout}{%
+    \PackageError{beamerkit}{Unknown layout `\BTK@layout`}%
+      {Declare it with \string\BTKDeclareLayout\space before use.}%
+  }{%
+    \csname BTK@layout@\BTK@layout\endcsname
+  }%
+}
+
+% Helper: define region rectangle from NW and SE coords
+\newcommand{\BTKRegionRect}[3]{%
+  \coordinate (\BTKRegionAnchor{#1}{nw}) at #2;
+  \coordinate (\BTKRegionAnchor{#1}{se}) at #3;
+  \coordinate (\BTKRegionAnchor{#1}{ne}) at ($(\BTKRegionAnchor{#1}{nw}) -| (\BTKRegionAnchor{#1}{se})$);
+  \coordinate (\BTKRegionAnchor{#1}{sw}) at ($(\BTKRegionAnchor{#1}{nw}) |- (\BTKRegionAnchor{#1}{se})$);
+  \coordinate (\BTKRegionAnchor{#1}{c})  at ($(\BTKRegionAnchor{#1}{nw})!0.5!(\BTKRegionAnchor{#1}{se})$);
+}
+
+% Built-in layouts
+\BTKDeclareLayout{full}{%
+  \BTKRegionRect{main}{(\BTKBodyAnchor{nw})}{(\BTKBodyAnchor{se})}%
+}
+
+\BTKDeclareLayout{two-col}{%
+  % left/right split inside body, with gutter
+  \coordinate (BTK@tmp@nw) at (\BTKBodyAnchor{nw});
+  \coordinate (BTK@tmp@se) at (\BTKBodyAnchor{se});
+  \coordinate (BTK@tmp@mid) at ($(\BTKBodyAnchor{nw})!0.5!(\BTKBodyAnchor{ne})$);
+
+  \BTKRegionRect{left}
+    {(\BTKBodyAnchor{nw})}
+    {($(BTK@tmp@mid |- \BTKBodyAnchor{se}) + (-0.5\BTKGutter,0)$)}%
+
+  \BTKRegionRect{right}
+    {($(BTK@tmp@mid) + (0.5\BTKGutter,0)$)}
+    {(\BTKBodyAnchor{se})}%
+}
+
+\BTKDeclareLayout{img-right}{%
+  % text + image panel on right, fixed width \BTKImgW, with gutter
+  \BTKRegionRect{text}
+    {(\BTKBodyAnchor{nw})}
+    {($( \BTKBodyAnchor{se}) + (-\BTKImgW-\BTKGutter,0)$)}%
+  \BTKRegionRect{img}
+    {($( \BTKBodyAnchor{ne}) + (-\BTKImgW,0)$)}
+    {(\BTKBodyAnchor{se})}%
+}
+
+\BTKDeclareLayout{blank}{%
+  % full page usable; also define a main region for convenience
+  \BTKRegionRect{main}{(\BTKPageAnchor{nw})}{(\BTKPageAnchor{se})}%
+}
+
+% ----------------------------
+% Per-frame keys
+% ----------------------------
+\define@key{beamerframe}{bg}{\BTKUseBackground{#1}}
+\define@key{beamerframe}{bgfile}{\BTKUseBackgroundFile{#1}}
+\define@key{beamerframe}{bgcolor}{\BTKUseBackgroundColor{#1}}
+\define@key{beamerframe}{bgopacity}{\BTKSetBackgroundOpacity{#1}}
+\define@key{beamerframe}{bgnone}[true]{\BTKNoBackground}
+
+\define@key{beamerframe}{layout}{\def\BTK@layout{#1}}
+
+% Reset after each frame (prevents “sticky” options)
+\AfterEndEnvironment{frame}{%
+  \BTKUseBackground{\BTK@defaultbg}%
+  \BTKSetBackgroundOpacity{1}%
+  \def\BTK@layout{\BTK@defaultlayout}%
+}
+
+% ----------------------------
+% Master background: defines anchors + applies layout + draws background
+% ----------------------------
+\setbeamertemplate{background}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    % Page anchors
+    \coordinate (\BTKPageAnchor{nw}) at (current page.north west);
+    \coordinate (\BTKPageAnchor{ne}) at (current page.north east);
+    \coordinate (\BTKPageAnchor{sw}) at (current page.south west);
+    \coordinate (\BTKPageAnchor{se}) at (current page.south east);
+    \coordinate (\BTKPageAnchor{c})  at (current page.center);
+
+    % Body anchors (excludes header/footer heights)
+    \coordinate (\BTKBodyAnchor{nw}) at ($(current page.north west)+(0,-\BTKHeaderH)$);
+    \coordinate (\BTKBodyAnchor{se}) at ($(current page.south east)+(0,\BTKFooterH)$);
+    \coordinate (\BTKBodyAnchor{ne}) at ($(\BTKBodyAnchor{nw}) -| (\BTKBodyAnchor{se})$);
+    \coordinate (\BTKBodyAnchor{sw}) at ($(\BTKBodyAnchor{nw}) |- (\BTKBodyAnchor{se})$);
+    \coordinate (\BTKBodyAnchor{c})  at ($(\BTKBodyAnchor{nw})!0.5!(\BTKBodyAnchor{se})$);
+
+    % Header/footer anchors (for overlay reference)
+    \coordinate (\BTKHeaderAnchor{nw}) at (\BTKPageAnchor{nw});
+    \coordinate (\BTKHeaderAnchor{se}) at ($(\BTKBodyAnchor{nw}) -| (\BTKPageAnchor{se})$);
+    \coordinate (\BTKHeaderAnchor{ne}) at ($(\BTKHeaderAnchor{nw}) -| (\BTKHeaderAnchor{se})$);
+    \coordinate (\BTKHeaderAnchor{sw}) at ($(\BTKHeaderAnchor{nw}) |- (\BTKHeaderAnchor{se})$);
+    \coordinate (\BTKHeaderAnchor{c})  at ($(\BTKHeaderAnchor{nw})!0.5!(\BTKHeaderAnchor{se})$);
+
+    \coordinate (\BTKFooterAnchor{nw}) at ($(\BTKBodyAnchor{se}) -| (\BTKPageAnchor{nw})$);
+    \coordinate (\BTKFooterAnchor{se}) at (\BTKPageAnchor{se});
+    \coordinate (\BTKFooterAnchor{ne}) at ($(\BTKFooterAnchor{nw}) -| (\BTKFooterAnchor{se})$);
+    \coordinate (\BTKFooterAnchor{sw}) at ($(\BTKFooterAnchor{nw}) |- (\BTKFooterAnchor{se})$);
+    \coordinate (\BTKFooterAnchor{c})  at ($(\BTKFooterAnchor{nw})!0.5!(\BTKFooterAnchor{se})$);
+
+    % Define region anchors for the selected layout
+    \BTK@applylayout
+
+    % Draw background
+    \ifx\BTK@bgmode\BTK@mode@none
+      % none
+    \else\ifx\BTK@bgmode\BTK@mode@color
+      \fill[fill=\BTK@bgcolor,opacity=\BTK@bgopacity]
+        (current page.south west) rectangle (current page.north east);
+    \else
+      \edef\BTK@tmpbg{\BTK@bgfile}%
+      \node[inner sep=0pt,outer sep=0pt,opacity=\BTK@bgopacity]
+        at (current page.center) {%
+          \includegraphics[width=\paperwidth,keepaspectratio]{\BTK@tmpbg}%
+        };
+    \fi\fi
+  \end{tikzpicture}%
+}
+
+% ----------------------------
+% “Easy mode” region placement
+% ----------------------------
+\newdimen\BTK@regW
+\newdimen\BTK@regH
+
+\newcommand{\BTK@calcRegionWH}[1]{%
+  \path let \p1=(\BTKRegionAnchor{#1}{nw}), \p2=(\BTKRegionAnchor{#1}{se}) in
+    \pgfextra{%
+      \global\BTK@regW=\dimexpr\x2-\x1\relax
+      \global\BTK@regH=\dimexpr\y1-\y2\relax
+    };
+}
+
+% Optional arg lets author pass TikZ node options: xshift=..., yshift=..., etc.
+\newenvironment{BTKRegion}[2][]{%
+  \def\BTK@rname{#2}%
+  \begin{tikzpicture}[remember picture,overlay]
+    \BTK@calcRegionWH{#2}%
+    \node[anchor=north west,inner sep=0pt,outer sep=0pt,#1]
+      at (\BTKRegionAnchor{#2}{nw}) {%
+        \begin{minipage}[t][\BTK@regH][t]{\BTK@regW}%
+          \ignorespaces
+}{%
+        \end{minipage}%
+      };
+  \end{tikzpicture}%
+}
+
+% ----------------------------
+% “Power mode” overlay
+% ----------------------------
+\newenvironment{BTKOverlay}{%
+  \begin{tikzpicture}[remember picture,overlay]
+}{%
+  \end{tikzpicture}%
+}
+
+% ----------------------------
+% Convenience frames
+% ----------------------------
+\providecommand{\insertmainframenumber}{\inserttotalframenumber}
+
+\newcommand{\BTKTitleFrame}{%
+  \begingroup
+    \BTKUseBackground{\BTK@titlebg}%
+    \begin{frame}[plain,noframenumbering]
+      \titlepage
+    \end{frame}
+  \endgroup
+}
+
+\newcommand{\BTKAppendixAnnounceFrame}[1]{%
+  \begingroup
+    \BTKUseBackground{\BTK@appendixbg}%
+    \begin{frame}[plain,noframenumbering]
+      \vfill\centering{\Large #1}\vfill
+    \end{frame}
+  \endgroup
+}
+
+\makeatother

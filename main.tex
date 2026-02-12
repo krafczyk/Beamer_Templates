@@ -12,19 +12,6 @@
 % Use the theme by name (beamerthemencsa.sty must be in theme/)
 \usetheme{ncsa}
 
-\makeatletter
-\typeout{=== Ginput@path (after usetheme) = \meaning\Ginput@path ===}
-\makeatother
-
-\makeatletter
-\g@addto@macro\Ginput@path{{figs/}}
-\makeatother
-
-\makeatletter
-\typeout{=== Ginput@path (after append) = \meaning\Ginput@path ===}
-\makeatother
-
-
 \title{Title}
 \author{Author}
 \date{\today}
@@ -35,11 +22,12 @@
   \titlepage
 \end{frame}
 
+\BTKTitleFrame
+
 \subimport{content/}{talk.tex}
 
 % backups
-\backupbegin
-\backupannounceslide
-\subimport{content/}{backup.tex}
+\appendix
+\BTKAppendixAnnounceFrame{Backup Slides}
 
 \end{document}

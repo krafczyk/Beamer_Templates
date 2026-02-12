@@ -1,66 +1,72 @@
+% theme/beamerthemencsa.sty
 \mode<presentation>
 
-% Requirement
+\RequirePackage{beamertoolkit}
 \RequirePackage{tikz}
-%\RequirePackage{calc}
 \RequirePackage{graphicx}
-\RequirePackage{etoolbox}
-%\RequirePackage{scrextend}
-%\RequirePackage[absolute,overlay]{textpos}
-\usetikzlibrary{positioning}
-\usetikzlibrary{calc}
-\usetikzlibrary{matrix}
-\usetikzlibrary{babel}
 
-\graphicspath{{theme/assets/}}
+% Adjust these to match your header/footer visuals
+\setlength{\BTKHeaderH}{1.05cm}
+\setlength{\BTKFooterH}{0.75cm}
+\setlength{\BTKGutter}{0.9cm}
+\setlength{\BTKImgW}{0.36\paperwidth}
 
-% Fallback for older beamer versions
-\providecommand{\insertmainframenumber}{\inserttotalframenumber}
-
-% Backup state flags (theme-global)
-\newif\ifbackupslides
-\backupslidesfalse
-
-\newif\ifbackupannounce
-\backupannouncefalse
-
-% User-facing commands
-\newcommand{\backupbegin}{%
-  \appendix
-  \backupslidestrue
-}
-
-\newcommand{\backupend}{%
-  \backupslidesfalse
-}
-
-% a single “Backup Slides” separator frame, styled by your background template
-\newcommand{\backupannounceslide}{%
-  {%
-    \backupannouncetrue
-    \begin{frame}[plain,noframenumbering]
-      \vfill
-      \centering
-      \usebeamerfont{title page header}Backup Slides
-      \vfill
-    \end{frame}
-  }%
-}
-
-\definecolor{ncsablue}{RGB}{0,81,174}
+% Colors (example)
 \definecolor{ncsagrey}{RGB}{102,102,102}
+\definecolor{ncsablue}{RGB}{0,81,174}
 
-% Settings
+% Declare background set
+\BTKDeclareBackground{default}{theme/assets/ncsa_generic_slide_background.jpg}
+\BTKDeclareBackground{title}{theme/assets/ncsa_title_background.jpg}
+\BTKDeclareBackground{appendix}{theme/assets/ncsa_title_background.jpg}
 
-\useinnertheme{ncsa}
-\useoutertheme{ncsa}
-\usecolortheme{ncsa}
+% Optional alternates (add files if you want)
+% \BTKDeclareBackground{dark}{theme/assets/bg_dark.png}
+% \BTKDeclareBackground{grid}{theme/assets/bg_grid.png}
 
-\addtolength{\headsep}{0.4cm}
+\BTKSetDefaultBackground{default}
+\BTKSetTitleBackground{title}
+\BTKSetAppendixBackground{appendix}
+\BTKSetDefaultLayout{full}
 
-\setbeamersize{text margin left=0.3cm,text margin right=0.3cm}
+% Framestyle: top bar
+\setbeamercolor{frametitle}{fg=white}
+\setbeamercolor{framesubtitle}{fg=white}
+\setbeamerfont{frametitle}{size=\Large}
+\setbeamerfont{framesubtitle}{size=\normalsize}
+
+\defbeamertemplate*{frametitle}{ncsa}{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[ncsagrey]
+      (\BTKHeaderAnchor{sw}) rectangle (\BTKHeaderAnchor{ne});
+    \node[anchor=west,inner sep=0pt,outer sep=0pt]
+      at ($(\BTKHeaderAnchor{sw})+(0.6cm,0.35cm)$) {%
+        \usebeamerfont{frametitle}\insertframetitle%
+        \ifx\insertframesubtitle\empty\else\ \usebeamerfont{framesubtitle}\insertframesubtitle\fi
+      };
+  \end{tikzpicture}%
+  \vspace*{0.65cm}%
+}
+\setbeamertemplate{frametitle}[ncsa]
+
+% Footline with main/appendix counting
+\setbeamercolor{footline}{fg=white}
+\setbeamerfont{footline}{size=\normalsize}
+
+\setbeamertemplate{footline}{%
+  \ifnum\value{framenumber}>0\relax
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[anchor=south,inner sep=0pt,outer sep=0pt]
+        at ($(\BTKFooterAnchor{c})+(0cm,0.10cm)$) {%
+          \usebeamerfont{footline}\insertframenumber/\insertmainframenumber%
+        };
+    \end{tikzpicture}%
+  \fi
+}
 
 \setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{blocks}[rounded][shadow=true]
+
+% Backup convenience
+\newcommand{\backupbegin}{\appendix}
 
 \mode<all>
