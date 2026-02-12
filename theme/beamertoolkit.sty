@@ -8,6 +8,13 @@
 \usetikzlibrary{calc}
 
 \makeatletter
+\newcommand{\BTKAppendGraphicPath}[1]{%
+  \@ifundefined{Ginput@path}{%
+    \graphicspath{{#1}}%
+  }{%
+    \g@addto@macro\Ginput@path{{#1}}%
+  }%
+}
 
 % ----------------------------
 % Public anchor-name helpers
