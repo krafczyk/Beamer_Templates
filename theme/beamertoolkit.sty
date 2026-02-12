@@ -93,8 +93,8 @@
   \BTK@rectadd{#1}%
   \coordinate (\BTKRectAnchor{#1}{nw}) at #2;%
   \coordinate (\BTKRectAnchor{#1}{se}) at #3;%
-  \coordinate (\BTKRectAnchor{#1}{ne}) at ($(\BTKRectAnchor{#1}{nw}) -| (\BTKRectAnchor{#1}{se})$);%
-  \coordinate (\BTKRectAnchor{#1}{sw}) at ($(\BTKRectAnchor{#1}{nw}) |- (\BTKRectAnchor{#1}{se})$);%
+  \coordinate (\BTKRectAnchor{#1}{ne}) at (\BTKRectAnchor{#1}{nw}) -| (\BTKRectAnchor{#1}{se});%
+  \coordinate (\BTKRectAnchor{#1}{sw}) at (\BTKRectAnchor{#1}{nw}) |- (\BTKRectAnchor{#1}{se});%
   \coordinate (\BTKRectAnchor{#1}{c})  at ($(\BTKRectAnchor{#1}{nw})!0.5!(\BTKRectAnchor{#1}{se})$);%
 }
 
@@ -177,21 +177,25 @@
 % ------------------------------------------------------------
 % Main slide total (exclude appendix/backup): BTKAppendixBegin writes total to aux
 % ------------------------------------------------------------
-\def\BTKMainTotal{0}
+\providecommand{\BTKMainTotal}{} % empty until written/read from .aux
 \newif\ifBTK@wroteMainTotal
 \BTK@wroteMainTotalfalse
 
+% Robust aux writer: do NOT expand \BTKMainTotal during \write
 \newcommand{\BTK@writeMainTotalToAux}[1]{%
-  \begingroup
-  \edef\BTK@auxline{\noexpand\gdef\noexpand\BTKMainTotal{#1}}%
-  \immediate\write\@auxout{\BTK@auxline}%
-  \endgroup
+  % #1 should be a pure number token list (e.g. 23)
+  \protected@write\@auxout{}{%
+    \string\gdef\string\BTKMainTotal{#1}%
+  }%
   \global\BTK@wroteMainTotaltrue
 }
 
 \newcommand{\BTKAppendixBegin}{%
   \ifBTK@wroteMainTotal\else
-    \BTK@writeMainTotalToAux{\number\value{framenumber}}%
+    \begingroup
+      \edef\BTK@tmp{\number\value{framenumber}}%
+      \BTK@writeMainTotalToAux{\BTK@tmp}%
+    \endgroup
   \fi
   \appendix
 }
@@ -199,19 +203,30 @@
 % If no appendix call happened, make main total == final total (next run)
 \AtEndDocument{%
   \ifBTK@wroteMainTotal\else
-    \BTK@writeMainTotalToAux{\number\value{framenumber}}%
+    \begingroup
+      \edef\BTK@tmp{\number\value{framenumber}}%
+      \BTK@writeMainTotalToAux{\BTK@tmp}%
+    \endgroup
   \fi
 }
 
+% Use main total if available; else fall back to total
 \providecommand{\insertmainframenumber}{%
-  \ifx\BTKMainTotal\@empty \inserttotalframenumber\else
-    \ifnum\BTKMainTotal>0\relax \BTKMainTotal\else \inserttotalframenumber\fi
+  \ifx\BTKMainTotal\@empty
+    \inserttotalframenumber
+  \else
+    \BTKMainTotal
   \fi
 }
 
-% ------------------------------------------------------------
-% Background state (optional, but handy)
-% ------------------------------------------------------------
+% ----------------------------
+% Background registry
+% ----------------------------
+\newcommand{\BTKDeclareBackground}[2]{%
+  \@namedef{BTK@bgfile@#1}{#2}%
+}
+
+% Background state
 \def\BTK@mode@image{image}
 \def\BTK@mode@color{color}
 \def\BTK@mode@none{none}
@@ -221,21 +236,28 @@
 \def\BTK@bgcolor{black}
 \def\BTK@bgopacity{1}
 
-% background registry
-\newcommand{\BTKDeclareBackground}[2]{%
-  \@namedef{BTK@bgfile@#1}{#2}%
-}
+\def\BTK@defaultbg{default}
+\def\BTK@titlebg{title}
+\def\BTK@appendixbg{appendix}
+
 \newcommand{\BTKUseBackground}[1]{%
   \def\BTK@bgmode{\BTK@mode@image}%
-  \@ifundefined{BTK@bgfile@#1}{%
-    \PackageError{beamertoolkit}{Unknown background `#1`}%
-      {Declare it with \string\BTKDeclareBackground.}%
+  \edef\BTK@bgname{#1}%
+  \@ifundefined{BTK@bgfile@\BTK@bgname}{%
+    \PackageError{beamertoolkit}{Unknown background `\BTK@bgname`}%
+      {Declare it with \string\BTKDeclareBackground\space before use.}%
     \def\BTK@bgfile{}%
   }{%
-    \edef\BTK@bgfile{\csname BTK@bgfile@#1\endcsname}%
+    \edef\BTK@bgfile{\csname BTK@bgfile@\BTK@bgname\endcsname}%
   }%
 }
-\newcommand{\BTKUseBackgroundFile}[1]{%
+
+\newcommand{\BTKSetDefaultBackground}[1]{%
+  \edef\BTK@defaultbg{#1}%
+  \BTKUseBackground{#1}%
+}
+\newcommand{\BTKSetTitleBackground}[1]{\edef\BTK@titlebg{#1}}
+\newcommand{\BTKSetAppendixBackground}[1]{\edef\BTK@appendixbg{#1}}\newcommand{\BTKUseBackgroundFile}[1]{%
   \def\BTK@bgmode{\BTK@mode@image}%
   \edef\BTK@bgfile{#1}%
 }
@@ -261,16 +283,16 @@
 \newcommand{\BTKFrameReset}{%
   \global\BTK@initedfalse
   \BTKResetSlotsToDefaults
+  % reset layout + background to theme defaults for the next frame
   \def\BTK@layout{\BTK@defaultlayout}%
-  % bg opacity should not stick by default; bg selection can be theme-controlled
+  \BTKUseBackground{\BTK@defaultbg}%
+  % bg opacity should not stick by default
   \BTKSetBackgroundOpacity{1}%
 }
 
 \AtBeginEnvironment{frame}{\BTKFrameReset}
-\AfterEndEnvironment{frame}{%
-  \def\BTK@layout{\BTK@defaultlayout}%
-  \BTKSetBackgroundOpacity{1}%
-}
+\AfterEndEnvironment{frame}{\BTKFrameReset}
+
 
 % ------------------------------------------------------------
 % Init inside TikZ overlay: define page anchors + apply layout once
