@@ -56,10 +56,10 @@
 \setbeamertemplate{footline}{%
   \ifnum\value{framenumber}>0\relax
     \begin{tikzpicture}[remember picture,overlay]
-      \node[anchor=south,inner sep=0pt,outer sep=0pt]
-        at ($(\BTKFooterAnchor{c})+(0cm,0.10cm)$) {%
-          \usebeamerfont{footline}\insertframenumber/\insertmainframenumber%
-        };
+      \BTKOverlaySetup
+      \node[anchor=south] at ($(\BTKFooterAnchor{c})+(0,0.10cm)$) {%
+        \usebeamerfont{footline}\insertframenumber/\insertmainframenumber%
+      };
     \end{tikzpicture}%
   \fi
 }
