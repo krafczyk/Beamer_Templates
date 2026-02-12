@@ -21,13 +21,14 @@
 
 \begin{document}
 
-\BTKTitleFrame
+\begin{frame}[plain,noframenumbering,layout=title,bg=title]
+  \titlepage
+\end{frame}
 
 \subimport{content/}{talk.tex}
 
 % backups
-\appendix
-\BTKAppendixAnnounceFrame{Backup Slides}
+\AppendixAnnounce{Backup Slides}
 
 \subimport{content/}{backup.tex}
 

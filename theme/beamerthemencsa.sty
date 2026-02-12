@@ -1,104 +1,197 @@
 % theme/beamerthemencsa.sty
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemencsa}[2026/02/12 NCSA theme on BTK]
+
 \mode<presentation>
 
 \RequirePackage{beamertoolkit}
 \RequirePackage{tikz}
-\RequirePackage{graphicx}
+\usetikzlibrary{calc}
 
-% Adjust these to match your header/footer visuals
-\setlength{\BTKHeaderH}{1.05cm}
-\setlength{\BTKFooterH}{0.75cm}
-\setlength{\BTKGutter}{0.9cm}
-\setlength{\BTKImgW}{0.36\paperwidth}
+% assets live here (theme may append; author adds figs/ separately)
+\BTKAppendGraphicPath{theme/assets/}
 
-% Colors (example)
-\definecolor{ncsagrey}{RGB}{102,102,102}
+% Colors
 \definecolor{ncsablue}{RGB}{0,81,174}
+\definecolor{ncsagrey}{RGB}{102,102,102}
 
-% Declare background set
+% Geometry knobs owned by theme
+\newlength{\NCSAHeaderH}
+\newlength{\NCSAFooterH}
+\newlength{\NCSAGutter}
+\newlength{\NCSAImgW}
+\setlength{\NCSAHeaderH}{1.05cm}
+\setlength{\NCSAFooterH}{0.75cm}
+\setlength{\NCSAGutter}{0.9cm}
+\setlength{\NCSAImgW}{0.36\paperwidth}
+
+% Backgrounds
 \BTKDeclareBackground{default}{theme/assets/ncsa_generic_slide_background.jpg}
 \BTKDeclareBackground{title}{theme/assets/ncsa_title_background.jpg}
 \BTKDeclareBackground{appendix}{theme/assets/ncsa_title_background.jpg}
+\BTKUseBackground{default} % theme default (author can override per frame)
 
-% Optional alternates (add files if you want)
-% \BTKDeclareBackground{dark}{theme/assets/bg_dark.png}
-% \BTKDeclareBackground{grid}{theme/assets/bg_grid.png}
+% Slots the theme exposes
+\BTKDeclareSlot{footleft}{}
+\BTKDeclareSlot{footcenter}{}
+\BTKDeclareSlot{footright}{\insertframenumber/\insertmainframenumber}
 
-\BTKSetDefaultBackground{default}
-\BTKSetTitleBackground{title}
-\BTKSetAppendixBackground{appendix}
+% --- Chrome rects shared by all layouts (theme-owned) ---
+\newcommand{\NCSA@chromeRects}{%
+  % Whole page
+  \BTKDeclareRect{page}{(\BTKPageAnchor{nw})}{(\BTKPageAnchor{se})}%
+  % Header strip
+  \BTKDeclareRect{header}%
+    {(\BTKPageAnchor{nw})}%
+    {($(\BTKPageAnchor{ne})+(0,-\NCSAHeaderH)$)}%
+  % Footer strip
+  \BTKDeclareRect{footer}%
+    {($(\BTKPageAnchor{sw})+(0,\NCSAFooterH)$)}%
+    {(\BTKPageAnchor{se})}%
+  % Body area (between header/footer)
+  \BTKDeclareRect{body}%
+    {($(\BTKPageAnchor{nw})+(0,-\NCSAHeaderH)$)}%
+    {($(\BTKPageAnchor{se})+(0,\NCSAFooterH)$)}%
+
+  % Footer slots (three boxes)
+  \BTKDeclareRect{footer-left}%
+    {($(\BTKRectAnchor{footer}{nw})+(0.7cm,-0.08cm)$)}%
+    {($(\BTKRectAnchor{footer}{c})+(-0.2cm,0.18cm)$)}%
+  \BTKDeclareRect{footer-center}%
+    {($(\BTKRectAnchor{footer}{nw})+(0.2cm,-0.08cm)$)}%
+    {($(\BTKRectAnchor{footer}{ne})+(-0.2cm,0.18cm)$)}%
+  \BTKDeclareRect{footer-right}%
+    {($(\BTKRectAnchor{footer}{c})+(0.2cm,-0.08cm)$)}%
+    {($(\BTKRectAnchor{footer}{ne})+(-0.7cm,0.18cm)$)}%
+}
+
+% Layouts (theme-owned)
+\BTKDeclareLayout{full}{%
+  \NCSA@chromeRects%
+  \BTKDeclareRect{main}{(\BTKRectAnchor{body}{nw})}{(\BTKRectAnchor{body}{se})}%
+}
+
+\BTKDeclareLayout{two-col}{%
+  \NCSA@chromeRects%
+  \coordinate (NCSA@mid) at ($(\BTKRectAnchor{body}{nw})!0.5!(\BTKRectAnchor{body}{ne})$);%
+  \BTKDeclareRect{left}%
+    {(\BTKRectAnchor{body}{nw})}%
+    {($(NCSA@mid |- \BTKRectAnchor{body}{se}) + (-0.5\NCSAGutter,0)$)}%
+  \BTKDeclareRect{right}%
+    {($(NCSA@mid) + (0.5\NCSAGutter,0)$)}%
+    {(\BTKRectAnchor{body}{se})}%
+}
+
+\BTKDeclareLayout{img-right}{%
+  \NCSA@chromeRects%
+  \BTKDeclareRect{text}%
+    {(\BTKRectAnchor{body}{nw})}%
+    {($(\BTKRectAnchor{body}{se})+(-\NCSAImgW-\NCSAGutter,0)$)}%
+  \BTKDeclareRect{img}%
+    {($(\BTKRectAnchor{body}{ne})+(-\NCSAImgW,0)$)}%
+    {(\BTKRectAnchor{body}{se})}%
+}
+
+\BTKDeclareLayout{blank}{%
+  \BTKDeclareRect{page}{(\BTKPageAnchor{nw})}{(\BTKPageAnchor{se})}%
+  \BTKDeclareRect{main}{(\BTKPageAnchor{nw})}{(\BTKPageAnchor{se})}%
+}
+
+% Title layout (for titlepage template)
+\BTKDeclareLayout{title}{%
+  \BTKDeclareRect{page}{(\BTKPageAnchor{nw})}{(\BTKPageAnchor{se})}%
+  % also define footer/header so other templates don't explode
+  \BTKDeclareRect{header}{(\BTKPageAnchor{nw})}{($(\BTKPageAnchor{ne})+(0,-\NCSAHeaderH)$)}%
+  \BTKDeclareRect{footer}{($(\BTKPageAnchor{sw})+(0,\NCSAFooterH)$)}{(\BTKPageAnchor{se})}%
+
+  % Title box centered, shifted up a bit (approx your old look)
+  \coordinate (NCSA@t) at ($(\BTKPageAnchor{c})+(0,1.8cm)$);%
+  \BTKDeclareRect{title}{($(NCSA@t)+(-6cm,1.0cm)$)}{($(NCSA@t)+(6cm,-1.0cm)$)}%
+
+  % Author/date near bottom
+  \coordinate (NCSA@a) at ($(\BTKPageAnchor{sw})+(0.5cm,2.9cm)$);%
+  \BTKDeclareRect{author}{($(NCSA@a)+(0,0.7cm)$)}{($(NCSA@a)+(7cm,0cm)$)}%
+  \coordinate (NCSA@d) at ($(\BTKPageAnchor{se})+(-0.5cm,2.9cm)$);%
+  \BTKDeclareRect{date}{($(NCSA@d)+(-4cm,0.7cm)$)}{($(NCSA@d)+(0cm,0cm)$)}%
+}
+
 \BTKSetDefaultLayout{full}
 
-% Framestyle: top bar
-\setbeamercolor{frametitle}{fg=white}
-\setbeamercolor{framesubtitle}{fg=white}
-\setbeamerfont{frametitle}{size=\Large}
-\setbeamerfont{framesubtitle}{size=\normalsize}
+% Fonts/colors similar to your old theme
+\setbeamercolor*{title page header}{fg=white}
+\setbeamerfont*{title page header}{size=\Huge}
 
+\setbeamercolor*{frametitle}{fg=white}
+\setbeamerfont*{frametitle}{size=\Large}
+\setbeamercolor*{framesubtitle}{fg=white}
+\setbeamerfont*{framesubtitle}{size=\normalsize}
+
+\setbeamercolor*{author}{fg=ncsagrey}
+\setbeamercolor*{date}{fg=ncsagrey}
+\setbeamercolor*{normal text}{fg=ncsagrey}
+
+\setbeamertemplate{navigation symbols}{}
+
+% --- Title page template (uses BTK rects) ---
+\defbeamertemplate*{title page}{ncsa}{%
+  \begin{BTKOverlay}%
+    % title background
+    \BTKUseBackground{title}%
+    \usebeamertemplate{BTK/background}%
+
+    \BTKPlaceRect{title}{%
+      \centering
+      \usebeamerfont{title page header}\color{white}\inserttitle
+    }%
+
+    \BTKPlaceRect{author}{%
+      \usebeamerfont{author}\usebeamercolor[fg]{author}\insertauthor
+    }%
+
+    \BTKPlaceRect{date}{%
+      \raggedleft
+      \usebeamerfont{date}\usebeamercolor[fg]{date}\insertdate
+    }%
+  \end{BTKOverlay}%
+}
+\setbeamertemplate{title page}[ncsa]
+
+% --- Frame title bar (header rect) ---
 \defbeamertemplate*{frametitle}{ncsa}{%
-  \begin{tikzpicture}[remember picture,overlay]
-    \fill[ncsagrey]
-      (\BTKHeaderAnchor{sw}) rectangle (\BTKHeaderAnchor{ne});
-    \node[anchor=west,inner sep=0pt,outer sep=0pt]
-      at ($(\BTKHeaderAnchor{sw})+(0.6cm,0.35cm)$) {%
+  \begin{BTKOverlay}%
+    \fill[ncsagrey] (\BTKRectAnchor{header}{sw}) rectangle (\BTKRectAnchor{header}{ne});%
+    \node[anchor=west,inner sep=0pt,outer sep=0pt]%
+      at ($(\BTKRectAnchor{header}{sw})+(0.6cm,0.35cm)$) {%
         \usebeamerfont{frametitle}\insertframetitle%
         \ifx\insertframesubtitle\empty\else\ \usebeamerfont{framesubtitle}\insertframesubtitle\fi
-      };
-  \end{tikzpicture}%
+      };%
+  \end{BTKOverlay}%
   \vspace*{0.65cm}%
 }
 \setbeamertemplate{frametitle}[ncsa]
 
-% Footline with main/appendix counting
-\setbeamercolor{footline}{fg=white}
-\setbeamerfont{footline}{size=\normalsize}
-
-\setbeamertemplate{footline}{%
+% --- Footline (slots + slide numbers) ---
+\defbeamertemplate*{footline}{ncsa}{%
   \ifnum\value{framenumber}>0\relax
-    \begin{tikzpicture}[remember picture,overlay]
-      \BTKOverlaySetup
-      \node[anchor=south] at ($(\BTKFooterAnchor{c})+(0,0.10cm)$) {%
-        \usebeamerfont{footline}\insertframenumber/\insertmainframenumber%
-      };
-    \end{tikzpicture}%
+    \begin{BTKOverlay}%
+      % left slot (often empty or a logo)
+      \BTKPlaceRect{footer-left}{\usebeamerfont{footline}\BTKUseSlot{footleft}}%
+      % center slot
+      \BTKPlaceRect{footer-center}{\centering\usebeamerfont{footline}\BTKUseSlot{footcenter}}%
+      % right slot (defaults to N/Nmain)
+      \BTKPlaceRect{footer-right}{\raggedleft\usebeamerfont{footline}\BTKUseSlot{footright}}%
+    \end{BTKOverlay}%
   \fi
 }
+\setbeamertemplate{footline}[ncsa]
 
-\setbeamertemplate{navigation symbols}{}
-
-% Backup convenience
-\newcommand{\backupbegin}{\appendix}
-
-% --- Section slide toggle ---
-\newif\ifBTKSectionSlides
-\BTKSectionSlidestrue  % default ON (set false to disable)
-
-\AtBeginSection[]{
-  \ifBTKSectionSlides
-    \begin{frame}[plain,noframenumbering,layout=full]
-      \begin{BTKRegion}{main}
-        \centering
-        \vfill
-        {\LARGE \insertsectionhead\par}
-        \vfill
-        % Optional: show TOC with current section highlighted
-        \tableofcontents[currentsection,hideothersubsections]
-      \end{BTKRegion}
-    \end{frame}
-  \fi
-}
-
-\AtBeginSubsection[]{
-  \ifBTKSectionSlides
-    \begin{frame}[plain,noframenumbering,layout=full]
-      \begin{BTKRegion}{main}
-        \centering
-        \vfill
-        {\Large \insertsubsectionhead\par}
-        \vfill
-      \end{BTKRegion}
-    \end{frame}
-  \fi
+\newcommand{\AppendixAnnounce}[1]{%
+  \BTKAppendixBegin
+  \begin{frame}[plain,noframenumbering,layout=full,bg=appendix]
+    \begin{BTKRegion}{main}
+      \centering\vfill{\LARGE #1}\vfill
+    \end{BTKRegion}
+  \end{frame}
 }
 
 \mode<all>

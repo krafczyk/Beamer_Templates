@@ -1,20 +1,23 @@
 % content/talk.tex
 
-\section{Layouts}
+\section{Layouts + slots}
 
-\begin{frame}[layout=full]{Full layout + region}
+\begin{frame}[layout=full]{Full layout (main region)}
+  % per-slide footer tweak:
+  \BTKSetSlot{footleft}{Draft}
+
   \begin{BTKRegion}{main}
     \begin{itemize}
-      \item This is the \texttt{main} region in \texttt{layout=full}.
-      \item Text flows normally inside a minipage.
-      \item Use \texttt{BTKOverlay} for absolute/TikZ power moves.
+      \item This slide uses \texttt{layout=full} and fills \texttt{main}.
+      \item Slot example: \texttt{\string\BTKSetSlot\{footleft\}\{Draft\}}.
+      \item Even spacing helpers: \texttt{\string\hfill}, \texttt{\string\vfill}, or BTK lists.
     \end{itemize}
   \end{BTKRegion}
 \end{frame}
 
-\begin{frame}[layout=two-col]{Two columns}
+\begin{frame}[layout=two-col]{Two columns (left/right regions)}
   \begin{BTKRegion}{left}
-    \textbf{Left}\\
+    \textbf{Left}\\[0.5em]
     \begin{itemize}
       \item bullets
       \item more bullets
@@ -22,62 +25,110 @@
   \end{BTKRegion}
 
   \begin{BTKRegion}{right}
-    \textbf{Right}\\
+    \textbf{Right}\\[0.5em]
     \begin{itemize}
-      \item a figure fits well here
-      \item or a table
+      \item figures/tables fit well
+      \item or equations
     \end{itemize}
   \end{BTKRegion}
 \end{frame}
 
-\begin{frame}[layout=img-right]{Text + image (right)}
+\begin{frame}[layout=img-right]{Text + image (img-right)}
   \begin{BTKRegion}{text}
-    \textbf{Narrative}\\
+    \textbf{Detector stack}\\[0.5em]
     \begin{itemize}
-      \item Put the story here.
-      \item Keep visuals on the right.
+      \item Silicon tracker: measures charged-particle tracks (curvature $\rightarrow p_T$)
+      \item Calorimeters: measure energy deposition (EM + hadronic)
     \end{itemize}
   \end{BTKRegion}
 
-  \begin{BTKRegion}{img}
-    \centering
-    \includegraphics[width=\linewidth]{example.png}
-  \end{BTKRegion}
-\end{frame}
-
-\begin{frame}[layout=img-right,bgopacity=0.35]{Custom per-frame opacity}
-  \begin{BTKRegion}{text}
-    \textbf{Same layout, different background opacity}\\
-    You can do \texttt{bg=...}, \texttt{bgfile=...}, or \texttt{bgcolor=...}.
-  \end{BTKRegion}
   \begin{BTKRegion}{img}
     \centering
     \includegraphics[width=\linewidth]{example_detail.png}
   \end{BTKRegion}
 \end{frame}
 
-\begin{frame}[layout=blank,bgnone]{Blank master + overlay}
-  % Whole page is yours. Demonstrate exposed anchors.
-  \begin{BTKOverlay}
-    % Draw body rectangle
-    \draw[very thick] (\BTKBodyAnchor{nw}) rectangle (\BTKBodyAnchor{se});
+% \section{Layouts}
 
-    % Place something relative to a known anchor
-    \node[anchor=north west] at (\BTKBodyAnchor{nw}) {\Large Blank canvas};
+% \begin{frame}[layout=full]{Full layout + region}
+%   \begin{itemize}
+%     \item This is the \texttt{main} region in \texttt{layout=full}.
+%     \item Text flows normally inside a minipage.
+%     \item Use \texttt{BTKOverlay} for absolute/TikZ power moves.
+%   \end{itemize}
 
-    % If a layout defined a region, you can reference it too; in blank we define main = full page
-    \draw[thick] (\BTKRegionAnchor{main}{nw}) rectangle (\BTKRegionAnchor{main}{se});
-  \end{BTKOverlay}
-\end{frame}
+%   \begin{BTKOverlay}
+%     % “power move” example: draw a box around the body
+%     % \draw (\BTKBodyAnchor{sw}) rectangle (\BTKBodyAnchor{ne});
+%   \end{BTKOverlay}
+% \end{frame}
 
-\section{Conclusion}
+% \begin{frame}[layout=two-col]{Two columns}
+%   \begin{BTKRegion}{left}
+%     \textbf{Left}\\
+%     \begin{itemize}
+%       \item bullets
+%       \item more bullets
+%     \end{itemize}
+%   \end{BTKRegion}
 
-\begin{frame}[layout=full]{Summary}
-  \begin{BTKRegion}{main}
-    \begin{itemize}
-      \item Layouts define named regions.
-      \item Regions give normal LaTeX flow inside bounded boxes.
-      \item Overlays reference stable anchors for “Power mode”.
-    \end{itemize}
-  \end{BTKRegion}
-\end{frame}
+%   \begin{BTKRegion}{right}
+%     \textbf{Right}\\
+%     \begin{itemize}
+%       \item a figure fits well here
+%       \item or a table
+%     \end{itemize}
+%   \end{BTKRegion}
+% \end{frame}
+
+% \begin{frame}[layout=img-right]{Text + image (right)}
+%   \begin{BTKRegion}{text}
+%     \textbf{Narrative}\\
+%     \begin{itemize}
+%       \item Put the story here.
+%       \item Keep visuals on the right.
+%     \end{itemize}
+%   \end{BTKRegion}
+
+%   \begin{BTKRegion}{img}
+%     \centering
+%     \includegraphics[width=\linewidth]{example.png}
+%   \end{BTKRegion}
+% \end{frame}
+
+% \begin{frame}[layout=img-right,bgopacity=0.35]{Custom per-frame opacity}
+%   \begin{BTKRegion}{text}
+%     \textbf{Same layout, different background opacity}\\
+%     You can do \texttt{bg=...}, \texttt{bgfile=...}, or \texttt{bgcolor=...}.
+%   \end{BTKRegion}
+%   \begin{BTKRegion}{img}
+%     \centering
+%     \includegraphics[width=\linewidth]{example_detail.png}
+%   \end{BTKRegion}
+% \end{frame}
+
+% \begin{frame}[layout=blank,bgnone]{Blank master + overlay}
+%   % Whole page is yours. Demonstrate exposed anchors.
+%   \begin{BTKOverlay}
+%     % Draw body rectangle
+%     \draw[very thick] (\BTKBodyAnchor{nw}) rectangle (\BTKBodyAnchor{se});
+
+%     % Place something relative to a known anchor
+%     \node[anchor=north west] at (\BTKBodyAnchor{nw}) {\Large Blank canvas};
+
+%     % If a layout defined a region, you can reference it too; in blank we define main = full page
+%     \draw[thick] (\BTKRegionAnchor{main}{nw}) rectangle (\BTKRegionAnchor{main}{se});
+%   \end{BTKOverlay}
+% \end{frame}
+
+% \section{Conclusion}
+
+% \begin{frame}[layout=full]{Summary}
+%   \begin{BTKRegion}{main}
+%     \begin{itemize}
+%       \item Layouts define named regions.
+%       \item Regions give normal LaTeX flow inside bounded boxes.
+%       \item Overlays reference stable anchors for “Power mode”.
+%     \end{itemize}
+%   \end{BTKRegion}
+% \end{frame}

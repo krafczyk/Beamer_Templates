@@ -1,6 +1,6 @@
 % theme/beamertoolkit.sty
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamertoolkit}[2026/02/10 Beamer toolkit: backgrounds + layouts]
+\ProvidesPackage{beamertoolkit}[2026/02/12 BTK: rects + slots + layouts]
 
 \RequirePackage{etoolbox}
 \RequirePackage{graphicx}
@@ -8,6 +8,10 @@
 \usetikzlibrary{calc}
 
 \makeatletter
+
+% ------------------------------------------------------------
+% Utilities
+% ------------------------------------------------------------
 \newcommand{\BTKAppendGraphicPath}[1]{%
   \@ifundefined{Ginput@path}{%
     \graphicspath{{#1}}%
@@ -16,108 +20,198 @@
   }%
 }
 
-% ----------------------------
-% Public anchor-name helpers
-% ----------------------------
-% Use inside TikZ like: (\BTKBodyAnchor{nw}) or (\BTKRegionAnchor{text}{c})
-\newcommand{\BTKPageAnchor}[1]{BTK@page@#1}     % nw ne sw se c
-\newcommand{\BTKBodyAnchor}[1]{BTK@body@#1}
-\newcommand{\BTKHeaderAnchor}[1]{BTK@header@#1}
-\newcommand{\BTKFooterAnchor}[1]{BTK@footer@#1}
-\newcommand{\BTKRegionAnchor}[2]{BTK@region@#1@#2} % region name, anchor
+% ------------------------------------------------------------
+% Anchors
+% ------------------------------------------------------------
+\newcommand{\BTKPageAnchor}[1]{BTK@page@#1}           % nw ne sw se c
+\newcommand{\BTKRectAnchor}[2]{BTK@rect@#1@#2}        % rect name, nw/ne/sw/se/c
 
-% ----------------------------
-% Theme/layout parameters
-% ----------------------------
-\newlength{\BTKHeaderH}
-\newlength{\BTKFooterH}
-\newlength{\BTKGutter}
-\newlength{\BTKImgW}
-
-\setlength{\BTKHeaderH}{0pt}
-\setlength{\BTKFooterH}{0pt}
-\setlength{\BTKGutter}{0.8cm}
-\setlength{\BTKImgW}{0.33\paperwidth}
-
-% ----------------------------
-% Debug mode (draw boxes around BTK-controlled geometry)
-% ----------------------------
+% ------------------------------------------------------------
+% Debug mode (optional)
+% ------------------------------------------------------------
 \newif\ifBTKDebug
 \BTKDebugfalse
 
-% Default line widths
-\def\BTKDebugLWPage{0.9pt}
-\def\BTKDebugLWBody{0.9pt}
-\def\BTKDebugLWHeader{0.8pt}
-\def\BTKDebugLWFooter{0.8pt}
-\def\BTKDebugLWRegion{0.7pt}
+% Default debug style
+\def\BTKDebugLWDefault{0.8pt}
+\def\BTKDebugColorDefault{black}
 
-% Default colors (dark, readable on white)
-\def\BTKDebugColorPage{black}
-\def\BTKDebugColorBody{black!80}
-\def\BTKDebugColorHeader{blue!70!black}
-\def\BTKDebugColorFooter{red!70!black}
-
-% Known region defaults
-\def\BTKDebugColorRegionMain{black}
-\def\BTKDebugColorRegionLeft{teal!70!black}
-\def\BTKDebugColorRegionRight{violet!70!black}
-\def\BTKDebugColorRegionText{green!60!black}
-\def\BTKDebugColorRegionImg{orange!80!black}
-
-% Unknown regions fall back
-\def\BTKDebugColorRegionOther{black}
-\def\BTKDebugLWRegionOther{0.7pt}
-
-% Rect helper: (color, line width, SW coord, NE coord)
-\newcommand{\BTK@dbgrect}[4]{%
-  \ifBTKDebug%
-    \draw[draw=#1,line width=#2] (#3) rectangle (#4);%
-  \fi%
+% Per-rect debug style setters
+\newcommand{\BTKSetRectDebugStyle}[3]{%
+  \@namedef{BTK@dbgcol@#1}{#2}%
+  \@namedef{BTK@dbglw@#1}{#3}%
 }
 
-% --- region registry so we can debug-draw ALL regions created by layouts ---
-\def\BTK@regionlist{} % comma-separated list of region names
+% Some nice defaults for common names (theme can override via BTKSetRectDebugStyle)
+\BTKSetRectDebugStyle{page}{black}{0.9pt}
+\BTKSetRectDebugStyle{header}{blue!70!black}{0.8pt}
+\BTKSetRectDebugStyle{footer}{red!70!black}{0.8pt}
+\BTKSetRectDebugStyle{body}{black!70}{0.8pt}
+\BTKSetRectDebugStyle{main}{black}{0.8pt}
+\BTKSetRectDebugStyle{left}{teal!70!black}{0.8pt}
+\BTKSetRectDebugStyle{right}{violet!70!black}{0.8pt}
+\BTKSetRectDebugStyle{text}{green!60!black}{0.8pt}
+\BTKSetRectDebugStyle{img}{orange!80!black}{0.8pt}
+\BTKSetRectDebugStyle{title}{blue!70!black}{0.8pt}
+\BTKSetRectDebugStyle{author}{black!70}{0.8pt}
+\BTKSetRectDebugStyle{date}{black!70}{0.8pt}
+\BTKSetRectDebugStyle{footer-left}{red!70!black}{0.7pt}
+\BTKSetRectDebugStyle{footer-center}{red!70!black}{0.7pt}
+\BTKSetRectDebugStyle{footer-right}{red!70!black}{0.7pt}
 
-\newcommand{\BTK@regadd}[1]{%
-  % Append #1 if not already present
-  \ifcsundef{BTK@reg@seen@#1}{%
-    \csdef{BTK@reg@seen@#1}{}%
-    \ifx\BTK@regionlist\@empty
-      \edef\BTK@regionlist{#1}%
-    \else
-      \edef\BTK@regionlist{\BTK@regionlist,#1}%
-    \fi
-  }{}%
-}
-
-% Map region name -> debug color (known ones special-cased)
-\newcommand{\BTK@dbgregioncolor}[1]{%
-  \def\BTK@dbgcol{\BTKDebugColorRegionOther}%
-  \ifdefstring{#1}{main}{\def\BTK@dbgcol{\BTKDebugColorRegionMain}}{}%
-  \ifdefstring{#1}{left}{\def\BTK@dbgcol{\BTKDebugColorRegionLeft}}{}%
-  \ifdefstring{#1}{right}{\def\BTK@dbgcol{\BTKDebugColorRegionRight}}{}%
-  \ifdefstring{#1}{text}{\def\BTK@dbgcol{\BTKDebugColorRegionText}}{}%
-  \ifdefstring{#1}{img}{\def\BTK@dbgcol{\BTKDebugColorRegionImg}}{}%
-}
-
-% ----------------------------
-% Background registry
-% ----------------------------
-\newcommand{\BTKDeclareBackground}[2]{%
-  \@namedef{BTK@bgfile@#1}{#2}%
-}
-\newcommand{\BTK@lookupbgfile}[1]{%
-  \@ifundefined{BTK@bgfile@#1}{%
-    \PackageError{beamerkit}{Unknown background `#1`}%
-      {Declare it with \string\BTKDeclareBackground\space before use.}%
-    \def\BTK@bgfile{}%
-  }{%
-    \edef\BTK@bgfile{\csname BTK@bgfile@#1\endcsname}%
+\newcommand{\BTK@dbgstylefor}[1]{%
+  \def\BTK@dbgcol{\BTKDebugColorDefault}%
+  \def\BTK@dbglw{\BTKDebugLWDefault}%
+  \@ifundefined{BTK@dbgcol@#1}{}{%
+    \edef\BTK@dbgcol{\csname BTK@dbgcol@#1\endcsname}%
+  }%
+  \@ifundefined{BTK@dbglw@#1}{}{%
+    \edef\BTK@dbglw{\csname BTK@dbglw@#1\endcsname}%
   }%
 }
 
-% Background state
+% ------------------------------------------------------------
+% Rect registry (per frame)
+% ------------------------------------------------------------
+\def\BTK@rectlist{} % comma-separated rect names for this frame
+
+\newcommand{\BTK@rectsReset}{%
+  \global\let\BTK@rectlist\@empty
+}
+
+\newcommand{\BTK@rectadd}[1]{%
+  \ifx\BTK@rectlist\@empty
+    \xdef\BTK@rectlist{#1}%
+  \else
+    \xdef\BTK@rectlist{\BTK@rectlist,#1}%
+  \fi
+}
+
+% Define a rectangle by NW and SE coords.
+% Must be called inside a tikzpicture.
+\newcommand{\BTKDeclareRect}[3]{%
+  \BTK@rectadd{#1}%
+  \coordinate (\BTKRectAnchor{#1}{nw}) at #2;%
+  \coordinate (\BTKRectAnchor{#1}{se}) at #3;%
+  \coordinate (\BTKRectAnchor{#1}{ne}) at ($(\BTKRectAnchor{#1}{nw}) -| (\BTKRectAnchor{#1}{se})$);%
+  \coordinate (\BTKRectAnchor{#1}{sw}) at ($(\BTKRectAnchor{#1}{nw}) |- (\BTKRectAnchor{#1}{se})$);%
+  \coordinate (\BTKRectAnchor{#1}{c})  at ($(\BTKRectAnchor{#1}{nw})!0.5!(\BTKRectAnchor{#1}{se})$);%
+}
+
+% ------------------------------------------------------------
+% Layout registry + per-frame key
+% ------------------------------------------------------------
+\newcommand{\BTKDeclareLayout}[2]{%
+  \@namedef{BTK@layout@#1}{#2}%
+}
+
+\def\BTK@layout{full}
+\def\BTK@defaultlayout{full}
+
+\newcommand{\BTKSetDefaultLayout}[1]{%
+  \def\BTK@defaultlayout{#1}%
+  \def\BTK@layout{#1}%
+}
+
+\define@key{beamerframe}{layout}{\def\BTK@layout{#1}}
+
+\newcommand{\BTKApplyLayout}{%
+  \@ifundefined{BTK@layout@\BTK@layout}{%
+    \PackageError{beamertoolkit}{Unknown layout `\BTK@layout`}%
+      {Declare it with \string\BTKDeclareLayout\space (theme or preamble).}%
+  }{%
+    \csname BTK@layout@\BTK@layout\endcsname
+  }%
+}
+
+% ------------------------------------------------------------
+% Slots (defaults + per-frame overrides)
+% ------------------------------------------------------------
+\def\BTK@slotlist{} % comma-separated slot names
+
+\newcommand{\BTK@slotadd}[1]{%
+  \ifx\BTK@slotlist\@empty
+    \xdef\BTK@slotlist{#1}%
+  \else
+    \xdef\BTK@slotlist{\BTK@slotlist,#1}%
+  \fi
+}
+
+\newcommand{\BTKDeclareSlot}[2]{%
+  \BTK@slotadd{#1}%
+  \@namedef{BTK@slot@default@#1}{#2}%
+  % If current slot not defined yet, initialize it (useful outside frames too)
+  \@ifundefined{BTK@slot@#1}{\@namedef{BTK@slot@#1}{#2}}{}%
+}
+
+\newcommand{\BTKSetSlotDefault}[2]{%
+  \@namedef{BTK@slot@default@#1}{#2}%
+}
+
+\newcommand{\BTKResetSlotsToDefaults}{%
+  \forcsvlist\BTK@slotreset{\BTK@slotlist}%
+}
+\newcommand{\BTK@slotreset}[1]{%
+  \@ifundefined{BTK@slot@default@#1}{%
+    \@namedef{BTK@slot@#1}{}%
+  }{%
+    \expandafter\gdef\csname BTK@slot@#1\endcsname{\csname BTK@slot@default@#1\endcsname}%
+  }%
+}
+
+\newcommand{\BTKSetSlot}[2]{%
+  \expandafter\gdef\csname BTK@slot@#1\endcsname{#2}%
+}
+
+\newcommand{\BTKUseSlot}[1]{%
+  \@ifundefined{BTK@slot@#1}{}{%
+    \csname BTK@slot@#1\endcsname
+  }%
+}
+
+\newcommand{\BTKIfSlotEmpty}[3]{%
+  \edef\BTK@tmp{\BTKUseSlot{#1}}%
+  \ifx\BTK@tmp\@empty #2\else #3\fi
+}
+
+% ------------------------------------------------------------
+% Main slide total (exclude appendix/backup): BTKAppendixBegin writes total to aux
+% ------------------------------------------------------------
+\def\BTKMainTotal{0}
+\newif\ifBTK@wroteMainTotal
+\BTK@wroteMainTotalfalse
+
+\newcommand{\BTK@writeMainTotalToAux}[1]{%
+  \begingroup
+  \edef\BTK@auxline{\noexpand\gdef\noexpand\BTKMainTotal{#1}}%
+  \immediate\write\@auxout{\BTK@auxline}%
+  \endgroup
+  \global\BTK@wroteMainTotaltrue
+}
+
+\newcommand{\BTKAppendixBegin}{%
+  \ifBTK@wroteMainTotal\else
+    \BTK@writeMainTotalToAux{\number\value{framenumber}}%
+  \fi
+  \appendix
+}
+
+% If no appendix call happened, make main total == final total (next run)
+\AtEndDocument{%
+  \ifBTK@wroteMainTotal\else
+    \BTK@writeMainTotalToAux{\number\value{framenumber}}%
+  \fi
+}
+
+\providecommand{\insertmainframenumber}{%
+  \ifx\BTKMainTotal\@empty \inserttotalframenumber\else
+    \ifnum\BTKMainTotal>0\relax \BTKMainTotal\else \inserttotalframenumber\fi
+  \fi
+}
+
+% ------------------------------------------------------------
+% Background state (optional, but handy)
+% ------------------------------------------------------------
 \def\BTK@mode@image{image}
 \def\BTK@mode@color{color}
 \def\BTK@mode@none{none}
@@ -127,20 +221,19 @@
 \def\BTK@bgcolor{black}
 \def\BTK@bgopacity{1}
 
-\def\BTK@defaultbg{default}
-\def\BTK@titlebg{title}
-\def\BTK@appendixbg{appendix}
-
-\newcommand{\BTKSetDefaultBackground}[1]{%
-  \def\BTK@defaultbg{#1}%
-  \BTKUseBackground{#1}%
+% background registry
+\newcommand{\BTKDeclareBackground}[2]{%
+  \@namedef{BTK@bgfile@#1}{#2}%
 }
-\newcommand{\BTKSetTitleBackground}[1]{\def\BTK@titlebg{#1}}
-\newcommand{\BTKSetAppendixBackground}[1]{\def\BTK@appendixbg{#1}}
-
 \newcommand{\BTKUseBackground}[1]{%
   \def\BTK@bgmode{\BTK@mode@image}%
-  \BTK@lookupbgfile{#1}%
+  \@ifundefined{BTK@bgfile@#1}{%
+    \PackageError{beamertoolkit}{Unknown background `#1`}%
+      {Declare it with \string\BTKDeclareBackground.}%
+    \def\BTK@bgfile{}%
+  }{%
+    \edef\BTK@bgfile{\csname BTK@bgfile@#1\endcsname}%
+  }%
 }
 \newcommand{\BTKUseBackgroundFile}[1]{%
   \def\BTK@bgmode{\BTK@mode@image}%
@@ -153,235 +246,196 @@
 \newcommand{\BTKNoBackground}{\def\BTK@bgmode{\BTK@mode@none}}
 \newcommand{\BTKSetBackgroundOpacity}[1]{\def\BTK@bgopacity{#1}}
 
-% ----------------------------
-% Layout registry
-% ----------------------------
-\newcommand{\BTKDeclareLayout}[2]{%
-  \@namedef{BTK@layout@#1}{#2}%
-}
-\def\BTK@layout{full}
-\def\BTK@defaultlayout{full}
-\newcommand{\BTKSetDefaultLayout}[1]{%
-  \def\BTK@defaultlayout{#1}%
-  \def\BTK@layout{#1}%
-}
-
-\newcommand{\BTK@applylayout}{%
-  \@ifundefined{BTK@layout@\BTK@layout}{%
-    \PackageError{beamerkit}{Unknown layout `\BTK@layout`}%
-      {Declare it with \string\BTKDeclareLayout\space before use.}%
-  }{%
-    \csname BTK@layout@\BTK@layout\endcsname
-  }%
-}
-
-% Helper: define region rectangle from NW and SE coords
-\newcommand{\BTKRegionRect}[3]{%
-  \BTK@regadd{#1}%
-  \coordinate (\BTKRegionAnchor{#1}{nw}) at #2;%
-  \coordinate (\BTKRegionAnchor{#1}{se}) at #3;%
-  \coordinate (\BTKRegionAnchor{#1}{ne}) at (\BTKRegionAnchor{#1}{nw} -| \BTKRegionAnchor{#1}{se});%
-  \coordinate (\BTKRegionAnchor{#1}{sw}) at (\BTKRegionAnchor{#1}{nw} |- \BTKRegionAnchor{#1}{se});%
-  \coordinate (\BTKRegionAnchor{#1}{c})  at ($(\BTKRegionAnchor{#1}{nw})!0.5!(\BTKRegionAnchor{#1}{se})$);%
-}
-
-% Built-in layouts
-\BTKDeclareLayout{full}{%
-  \BTKRegionRect{main}{(\BTKBodyAnchor{nw})}{(\BTKBodyAnchor{se})}%
-}
-
-% left/right split inside body, with gutter
-\BTKDeclareLayout{two-col}{%
-  \coordinate (BTK@tmp@mid) at ($(\BTKBodyAnchor{nw})!0.5!(\BTKBodyAnchor{ne})$);%
-  \BTKRegionRect{left}{(\BTKBodyAnchor{nw})}{($(BTK@tmp@mid |- \BTKBodyAnchor{se}) + (-0.5\BTKGutter,0)$)}%
-  \BTKRegionRect{right}{($(BTK@tmp@mid) + (0.5\BTKGutter,0)$)}{(\BTKBodyAnchor{se})}%
-}
-
-\BTKDeclareLayout{img-right}{%
-  % text + image panel on right, fixed width \BTKImgW, with gutter
-  \BTKRegionRect{text}{(\BTKBodyAnchor{nw})}{($( \BTKBodyAnchor{se}) + (-\BTKImgW-\BTKGutter,0)$)}%
-  \BTKRegionRect{img}{($( \BTKBodyAnchor{ne}) + (-\BTKImgW,0)$)}{(\BTKBodyAnchor{se})}%
-}
-
-\BTKDeclareLayout{blank}{%
-  % full page usable; also define a main region for convenience
-  \BTKRegionRect{main}{(\BTKPageAnchor{nw})}{(\BTKPageAnchor{se})}%
-}
-
-% ----------------------------
-% Per-frame keys
-% ----------------------------
 \define@key{beamerframe}{bg}{\BTKUseBackground{#1}}
 \define@key{beamerframe}{bgfile}{\BTKUseBackgroundFile{#1}}
 \define@key{beamerframe}{bgcolor}{\BTKUseBackgroundColor{#1}}
 \define@key{beamerframe}{bgopacity}{\BTKSetBackgroundOpacity{#1}}
 \define@key{beamerframe}{bgnone}[true]{\BTKNoBackground}
 
-\define@key{beamerframe}{layout}{\def\BTK@layout{#1}}
+% ------------------------------------------------------------
+% Per-frame init/reset
+% ------------------------------------------------------------
+\newif\ifBTK@inited
+\BTK@initedfalse
 
-% Reset after each frame (prevents “sticky” options)
-\AfterEndEnvironment{frame}{%
-  \BTKUseBackground{\BTK@defaultbg}%
-  \BTKSetBackgroundOpacity{1}%
+\newcommand{\BTKFrameReset}{%
+  \global\BTK@initedfalse
+  \BTKResetSlotsToDefaults
   \def\BTK@layout{\BTK@defaultlayout}%
+  % bg opacity should not stick by default; bg selection can be theme-controlled
+  \BTKSetBackgroundOpacity{1}%
 }
 
-% Overlay setup
-\newcommand{\BTKOverlaySetup}{%
-  % Page anchors
-  \coordinate (\BTKPageAnchor{nw}) at (current page.north west);%
-  \coordinate (\BTKPageAnchor{ne}) at (current page.north east);%
-  \coordinate (\BTKPageAnchor{sw}) at (current page.south west);%
-  \coordinate (\BTKPageAnchor{se}) at (current page.south east);%
-  \coordinate (\BTKPageAnchor{c})  at (current page.center);%
-  % Body anchors
-  \coordinate (\BTKBodyAnchor{nw}) at ($(current page.north west)+(0,-\BTKHeaderH)$);%
-  \coordinate (\BTKBodyAnchor{se}) at ($(current page.south east)+(0,\BTKFooterH)$);%
-  \coordinate (\BTKBodyAnchor{ne}) at (\BTKBodyAnchor{nw} -| \BTKBodyAnchor{se});%
-  \coordinate (\BTKBodyAnchor{sw}) at (\BTKBodyAnchor{nw} |- \BTKBodyAnchor{se});%
-  \coordinate (\BTKBodyAnchor{c})  at ($(\BTKBodyAnchor{nw})!0.5!(\BTKBodyAnchor{se})$);%
-  % Header anchors
-  \coordinate (\BTKHeaderAnchor{nw}) at (\BTKPageAnchor{nw});%
-  \coordinate (\BTKHeaderAnchor{se}) at (\BTKBodyAnchor{nw} -| \BTKPageAnchor{se});%
-  \coordinate (\BTKHeaderAnchor{ne}) at (\BTKHeaderAnchor{nw} -| \BTKHeaderAnchor{se});%
-  \coordinate (\BTKHeaderAnchor{sw}) at (\BTKHeaderAnchor{nw} |- \BTKHeaderAnchor{se});%
-  \coordinate (\BTKHeaderAnchor{c})  at ($(\BTKHeaderAnchor{nw})!0.5!(\BTKHeaderAnchor{se})$);%
-  % Footer anchors
-  \coordinate (\BTKFooterAnchor{nw}) at (\BTKBodyAnchor{se} -| \BTKPageAnchor{nw});%
-  \coordinate (\BTKFooterAnchor{se}) at (\BTKPageAnchor{se});%
-  \coordinate (\BTKFooterAnchor{ne}) at (\BTKFooterAnchor{nw} -| \BTKFooterAnchor{se});%
-  \coordinate (\BTKFooterAnchor{sw}) at (\BTKFooterAnchor{nw} |- \BTKFooterAnchor{se});%
-  \coordinate (\BTKFooterAnchor{c})  at ($(\BTKFooterAnchor{nw})!0.5!(\BTKFooterAnchor{se})$);%
-  % Regions
-  \BTK@applylayout%
+\AtBeginEnvironment{frame}{\BTKFrameReset}
+\AfterEndEnvironment{frame}{%
+  \def\BTK@layout{\BTK@defaultlayout}%
+  \BTKSetBackgroundOpacity{1}%
 }
 
-% Draw debug boxes for core geometry + known regions
-\newcommand{\BTKDebugDraw}{%
-  \ifBTKDebug%
-    % Page / body / header / footer
-    \BTK@dbgrect{\BTKDebugColorPage}{\BTKDebugLWPage}{\BTKPageAnchor{sw}}{\BTKPageAnchor{ne}}%
-    \BTK@dbgrect{\BTKDebugColorBody}{\BTKDebugLWBody}{\BTKBodyAnchor{sw}}{\BTKBodyAnchor{ne}}%
-    \BTK@dbgrect{\BTKDebugColorHeader}{\BTKDebugLWHeader}{\BTKHeaderAnchor{sw}}{\BTKHeaderAnchor{ne}}%
-    \BTK@dbgrect{\BTKDebugColorFooter}{\BTKDebugLWFooter}{\BTKFooterAnchor{sw}}{\BTKFooterAnchor{ne}}%
-    % Regions registered by layouts
-    \forcsvlist\BTK@dbgdrawregion{\BTK@regionlist}%
-  \fi%
+% ------------------------------------------------------------
+% Init inside TikZ overlay: define page anchors + apply layout once
+% ------------------------------------------------------------
+\newcommand{\BTKInitInTikZ}{%
+  \ifBTK@inited\else
+    \BTK@rectsReset%
+    % page anchors
+    \coordinate (\BTKPageAnchor{nw}) at (current page.north west);%
+    \coordinate (\BTKPageAnchor{ne}) at (current page.north east);%
+    \coordinate (\BTKPageAnchor{sw}) at (current page.south west);%
+    \coordinate (\BTKPageAnchor{se}) at (current page.south east);%
+    \coordinate (\BTKPageAnchor{c})  at (current page.center);%
+    % apply layout (theme defines rects)
+    \usebeamertemplate{BTK/layout}%
+    \global\BTK@initedtrue
+  \fi
 }
 
-\newcommand{\BTK@dbgdrawregion}[1]{%
-  % only draw if region coords exist for this frame
-  \@ifundefined{pgf@sh@ns@\BTKRegionAnchor{#1}{nw}}{}{%
-    \BTK@dbgregioncolor{#1}%
-    \BTK@dbgrect{\BTK@dbgcol}{\BTKDebugLWRegion}{\BTKRegionAnchor{#1}{sw}}{\BTKRegionAnchor{#1}{ne}}%
-  }%
-}
-
-% ----------------------------
-% Master background: defines anchors + applies layout + draws background
-% ----------------------------
-\setbeamertemplate{background}{%
-  \begin{tikzpicture}[remember picture,overlay]
-    \BTKOverlaySetup
-    % Draw background
-    \ifx\BTK@bgmode\BTK@mode@none
-      % none
-    \else\ifx\BTK@bgmode\BTK@mode@color
-      \fill[fill=\BTK@bgcolor,opacity=\BTK@bgopacity]
-        (current page.south west) rectangle (current page.north east);
-    \else
-      \edef\BTK@tmpbg{\BTK@bgfile}%
-      \node[inner sep=0pt,outer sep=0pt,opacity=\BTK@bgopacity]
-        at (current page.center) {%
-          \includegraphics[width=\paperwidth,keepaspectratio]{\BTK@tmpbg}%
-        };
-    \fi\fi
-    % DEBUG overlays
-    \BTKDebugDraw
+% ------------------------------------------------------------
+% Overlay environment (power mode)
+% ------------------------------------------------------------
+\newenvironment{BTKOverlay}{%
+  \begin{tikzpicture}[remember picture,overlay]%
+    \BTKInitInTikZ%
+}{%
   \end{tikzpicture}%
 }
 
-\newsavebox{\BTK@regionbox}
-\newcommand{\BTK@regionopts}{}
-\newcommand{\BTK@regionname}{}
+% ------------------------------------------------------------
+% Box placement helpers (rect -> minipage)
+% ------------------------------------------------------------
+\newdimen\BTK@rectW
+\newdimen\BTK@rectH
 
-% ----------------------------
-% “Easy mode” region placement
-% ----------------------------
-\newdimen\BTK@regW
-\newdimen\BTK@regH
-
-\newcommand{\BTK@calcRegionWH}[1]{%
-  \path let \p1=(\BTKRegionAnchor{#1}{nw}), \p2=(\BTKRegionAnchor{#1}{se}) in
+\newcommand{\BTK@calcRectWH}[1]{%
+  \path let \p1=(\BTKRectAnchor{#1}{nw}), \p2=(\BTKRectAnchor{#1}{se}) in
     \pgfextra{%
-      \global\BTK@regW=\dimexpr\x2-\x1\relax
-      \global\BTK@regH=\dimexpr\y1-\y2\relax
-    };
+      \global\BTK@rectW=\dimexpr\x2-\x1\relax
+      \global\BTK@rectH=\dimexpr\y1-\y2\relax
+    };%
 }
 
-% Optional arg: TikZ node options (xshift=..., yshift=..., etc.)
+% Place arbitrary content into a rect (call inside BTKOverlay or any tikz overlay)
+% Optional arg: TikZ node options (xshift=..., yshift=..., inner sep=..., etc.)
+\newcommand{\BTKPlaceRect}[3][]{%
+  \BTK@calcRectWH{#2}%
+  \node[anchor=north west,inner sep=0pt,outer sep=0pt,#1]%
+    at (\BTKRectAnchor{#2}{nw}) {%
+      \begin{minipage}[t][\BTK@rectH][t]{\BTK@rectW}%
+        \ignorespaces#3\unskip
+      \end{minipage}%
+    };%
+}
+
+% Place a slot into a rect
+\newcommand{\BTKPlaceSlot}[3][]{%
+  \BTKPlaceRect[#1]{#2}{\BTKUseSlot{#3}}%
+}
+
+% Author-facing region environment (drop normal TeX into a named rect)
+\newsavebox{\BTK@regionbox}
+\newcommand{\BTK@regionname}{}
+\newcommand{\BTK@regionopts}{}
+
 \newenvironment{BTKRegion}[2][]{%
   \def\BTK@regionopts{#1}%
   \def\BTK@regionname{#2}%
-  % Compute region width/height (needs anchors)
-  \begin{tikzpicture}[remember picture,overlay]%
-    \BTKOverlaySetup%
-    \BTK@calcRegionWH{#2}%
-  \end{tikzpicture}%
-  % Capture content into a box (normal LaTeX flow)
+  % ensure rect exists for this layout (needs overlay context)
+  \begin{BTKOverlay}%
+    \@ifundefined{pgf@sh@ns@\BTKRectAnchor{#2}{nw}}{%
+      \PackageError{beamertoolkit}{Rect `#2' is not defined for layout `\BTK@layout'}%
+        {Define it in the layout via \string\BTKDeclareRect.}%
+    }{}%
+    \BTK@calcRectWH{#2}%
+  \end{BTKOverlay}%
   \begin{lrbox}{\BTK@regionbox}%
-    \begin{minipage}[t][\BTK@regH][t]{\BTK@regW}%
+    \begin{minipage}[t][\BTK@rectH][t]{\BTK@rectW}%
       \ignorespaces%
 }{%
     \end{minipage}%
   \end{lrbox}%
-  % Place the box into the region
-  \begin{tikzpicture}[remember picture,overlay]%
-    \BTKOverlaySetup%
-    \node[anchor=north west,inner sep=0pt,outer sep=0pt,\BTK@regionopts]%
-      (BTK@placed@node) at (\BTKRegionAnchor{\BTK@regionname}{nw}) {\usebox{\BTK@regionbox}};%
+  \begin{BTKOverlay}%
+    \BTKPlaceRect[\BTK@regionopts]{\BTK@regionname}{\usebox{\BTK@regionbox}}%
     \ifBTKDebug%
-      % Outline the region itself (not the content node), so you see expected bounds
-      \BTK@dbgregioncolor{\BTK@regionname}%
-      \BTK@dbgrect{\BTK@dbgcol}{\BTKDebugLWRegion}{\BTKRegionAnchor{\BTK@regionname}{sw}}{\BTKRegionAnchor{\BTK@regionname}{ne}}%
-      % Outline the actual placed content box too (useful for inner sep / shifts)
-      \draw[draw=\BTK@dbgcol,line width=\BTKDebugLWRegion]
-        (BTK@placed@node.south west) rectangle (BTK@placed@node.north east);%
+      \BTK@dbgstylefor{\BTK@regionname}%
+      \draw[draw=\BTK@dbgcol,line width=\BTK@dbglw]%
+        (\BTKRectAnchor{\BTK@regionname}{sw}) rectangle (\BTKRectAnchor{\BTK@regionname}{ne});%
     \fi%
-  \end{tikzpicture}%
+  \end{BTKOverlay}%
 }
 
-% ----------------------------
-% “Power mode” overlay
-% ----------------------------
-\newenvironment{BTKOverlay}{%
-  \begin{tikzpicture}[remember picture,overlay]
-    \BTKOverlaySetup
+% ------------------------------------------------------------
+% Even-spacing helpers (inside boxes/slots)
+% ------------------------------------------------------------
+\newif\ifBTK@firsthitem
+\newenvironment{BTKHList}[1][\linewidth]{%
+  \BTK@firsthitemtrue%
+  \hbox to #1\bgroup\ignorespaces%
 }{%
-  \end{tikzpicture}%
+  \egroup%
+}
+\newcommand{\BTKHItem}[1]{%
+  \ifBTK@firsthitem\BTK@firsthitemfalse\else\hfil\fi%
+  \strut #1%
 }
 
-% ----------------------------
-% Convenience frames
-% ----------------------------
-\providecommand{\insertmainframenumber}{\inserttotalframenumber}
-
-\newcommand{\BTKTitleFrame}{%
-  \begingroup
-    \BTKUseBackground{\BTK@titlebg}%
-    \begin{frame}[plain,noframenumbering]
-      \titlepage
-    \end{frame}
-  \endgroup
+\newif\ifBTK@firstvitem
+\newenvironment{BTKVList}[1]{%
+  \BTK@firstvitemtrue%
+  \vbox to #1\bgroup\ignorespaces%
+}{%
+  \egroup%
+}
+\newcommand{\BTKVItem}[1]{%
+  \ifBTK@firstvitem\BTK@firstvitemfalse\else\vfil\fi%
+  \hbox{#1}%
 }
 
-\newcommand{\BTKAppendixAnnounceFrame}[1]{%
-  \begingroup
-    \BTKUseBackground{\BTK@appendixbg}%
-    \begin{frame}[plain,noframenumbering]
-      \vfill\centering{\Large #1}\vfill
-    \end{frame}
-  \endgroup
+% ------------------------------------------------------------
+% BTK beamer templates
+% ------------------------------------------------------------
+\defbeamertemplate*{BTK/layout}{default}{%
+  \BTKApplyLayout%
+}
+
+\defbeamertemplate*{BTK/background}{default}{%
+  \ifx\BTK@bgmode\BTK@mode@none
+    % nothing
+  \else\ifx\BTK@bgmode\BTK@mode@color
+    \fill[fill=\BTK@bgcolor,opacity=\BTK@bgopacity]
+      (current page.south west) rectangle (current page.north east);%
+  \else
+    \node[inner sep=0pt,outer sep=0pt,opacity=\BTK@bgopacity] at (current page.center) {%
+      \includegraphics[width=\paperwidth,keepaspectratio]{\BTK@bgfile}%
+    };%
+  \fi\fi
+}
+
+\defbeamertemplate*{BTK/foreground}{default}{%
+  % theme may override
+}
+
+% Debug draw of all rects registered this frame
+\newcommand{\BTKDebugDraw}{%
+  \ifBTKDebug%
+    \forcsvlist\BTK@dbgdrawrect{\BTK@rectlist}%
+  \fi%
+}
+\newcommand{\BTK@dbgdrawrect}[1]{%
+  \@ifundefined{pgf@sh@ns@\BTKRectAnchor{#1}{nw}}{}{%
+    \BTK@dbgstylefor{#1}%
+    \draw[draw=\BTK@dbgcol,line width=\BTK@dbglw]%
+      (\BTKRectAnchor{#1}{sw}) rectangle (\BTKRectAnchor{#1}{ne});%
+  }%
+}
+
+% One reliable per-frame hook: Beamer background runs every slide.
+% This is *init + (optional) background + debug + foreground*.
+\setbeamertemplate{background}{%
+  \begin{BTKOverlay}%
+    \usebeamertemplate{BTK/background}%
+    \BTKDebugDraw%
+    \usebeamertemplate{BTK/foreground}%
+  \end{BTKOverlay}%
 }
 
 \makeatother
