@@ -208,6 +208,10 @@
   \end{tikzpicture}%
 }
 
+\newsavebox{\BTK@regionbox}
+\newcommand{\BTK@regionopts}{}
+\newcommand{\BTK@regionname}{}
+
 % ----------------------------
 % “Easy mode” region placement
 % ----------------------------
@@ -222,18 +226,27 @@
     };
 }
 
-% Optional arg lets author pass TikZ node options: xshift=..., yshift=..., etc.
+% Optional arg: TikZ node options (xshift=..., yshift=..., etc.)
 \newenvironment{BTKRegion}[2][]{%
-  \def\BTK@rname{#2}%
-  \begin{tikzpicture}[remember picture,overlay]
+  \def\BTK@regionopts{#1}%
+  \def\BTK@regionname{#2}%
+  % Compute region width/height (needs anchors)
+  \begin{tikzpicture}[remember picture,overlay]%
+    \BTKOverlaySetup%
     \BTK@calcRegionWH{#2}%
-    \node[anchor=north west,inner sep=0pt,outer sep=0pt,#1]
-      at (\BTKRegionAnchor{#2}{nw}) {%
-        \begin{minipage}[t][\BTK@regH][t]{\BTK@regW}%
-          \ignorespaces
+  \end{tikzpicture}%
+  % Capture content into a box (normal LaTeX flow)
+  \begin{lrbox}{\BTK@regionbox}%
+    \begin{minipage}[t][\BTK@regH][t]{\BTK@regW}%
+      \ignorespaces%
 }{%
-        \end{minipage}%
-      };
+    \end{minipage}%
+  \end{lrbox}%
+  % Place the box into the region
+  \begin{tikzpicture}[remember picture,overlay]%
+    \BTKOverlaySetup%
+    \node[anchor=north west,inner sep=0pt,outer sep=0pt,\BTK@regionopts]%
+      at (\BTKRegionAnchor{\BTK@regionname}{nw}) {\usebox{\BTK@regionbox}};%
   \end{tikzpicture}%
 }
 
