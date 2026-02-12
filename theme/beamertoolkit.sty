@@ -120,29 +120,17 @@
   \BTKRegionRect{main}{(\BTKBodyAnchor{nw})}{(\BTKBodyAnchor{se})}%
 }
 
+% left/right split inside body, with gutter
 \BTKDeclareLayout{two-col}{%
-  % left/right split inside body, with gutter
-  \coordinate (BTK@tmp@nw) at (\BTKBodyAnchor{nw});
-  \coordinate (BTK@tmp@se) at (\BTKBodyAnchor{se});
-  \coordinate (BTK@tmp@mid) at ($(\BTKBodyAnchor{nw})!0.5!(\BTKBodyAnchor{ne})$);
-
-  \BTKRegionRect{left}
-    {(\BTKBodyAnchor{nw})}
-    {($(BTK@tmp@mid |- \BTKBodyAnchor{se}) + (-0.5\BTKGutter,0)$)}%
-
-  \BTKRegionRect{right}
-    {($(BTK@tmp@mid) + (0.5\BTKGutter,0)$)}
-    {(\BTKBodyAnchor{se})}%
+  \coordinate (BTK@tmp@mid) at ($(\BTKBodyAnchor{nw})!0.5!(\BTKBodyAnchor{ne})$);%
+  \BTKRegionRect{left}{(\BTKBodyAnchor{nw})}{($(BTK@tmp@mid |- \BTKBodyAnchor{se}) + (-0.5\BTKGutter,0)$)}%
+  \BTKRegionRect{right}{($(BTK@tmp@mid) + (0.5\BTKGutter,0)$)}{(\BTKBodyAnchor{se})}%
 }
 
 \BTKDeclareLayout{img-right}{%
   % text + image panel on right, fixed width \BTKImgW, with gutter
-  \BTKRegionRect{text}
-    {(\BTKBodyAnchor{nw})}
-    {($( \BTKBodyAnchor{se}) + (-\BTKImgW-\BTKGutter,0)$)}%
-  \BTKRegionRect{img}
-    {($( \BTKBodyAnchor{ne}) + (-\BTKImgW,0)$)}
-    {(\BTKBodyAnchor{se})}%
+  \BTKRegionRect{text}{(\BTKBodyAnchor{nw})}{($( \BTKBodyAnchor{se}) + (-\BTKImgW-\BTKGutter,0)$)}%
+  \BTKRegionRect{img}{($( \BTKBodyAnchor{ne}) + (-\BTKImgW,0)$)}{(\BTKBodyAnchor{se})}%
 }
 
 \BTKDeclareLayout{blank}{%
@@ -171,36 +159,32 @@
 % Overlay setup
 \newcommand{\BTKOverlaySetup}{%
   % Page anchors
-  \coordinate (\BTKPageAnchor{nw}) at (current page.north west);
-  \coordinate (\BTKPageAnchor{ne}) at (current page.north east);
-  \coordinate (\BTKPageAnchor{sw}) at (current page.south west);
-  \coordinate (\BTKPageAnchor{se}) at (current page.south east);
-  \coordinate (\BTKPageAnchor{c})  at (current page.center);
-
-  % Body anchors (exclude header/footer heights)
-  \coordinate (\BTKBodyAnchor{nw}) at ($(current page.north west)+(0,-\BTKHeaderH)$);
-  \coordinate (\BTKBodyAnchor{se}) at ($(current page.south east)+(0,\BTKFooterH)$);
-  \coordinate (\BTKBodyAnchor{ne}) at ($(\BTKBodyAnchor{nw}) -| (\BTKBodyAnchor{se})$);
-  \coordinate (\BTKBodyAnchor{sw}) at ($(\BTKBodyAnchor{nw}) |- (\BTKBodyAnchor{se})$);
-  \coordinate (\BTKBodyAnchor{c})  at ($(\BTKBodyAnchor{nw})!0.5!(\BTKBodyAnchor{se})$);
-
-  % Header/footer anchors
-  \coordinate (\BTKHeaderAnchor{nw}) at (\BTKPageAnchor{nw});
-  \coordinate (\BTKHeaderAnchor{se}) at ($(\BTKBodyAnchor{nw}) -| (\BTKPageAnchor{se})$);
-  \coordinate (\BTKHeaderAnchor{ne}) at ($(\BTKHeaderAnchor{nw}) -| (\BTKHeaderAnchor{se})$);
-  \coordinate (\BTKHeaderAnchor{sw}) at ($(\BTKHeaderAnchor{nw}) |- (\BTKHeaderAnchor{se})$);
-  \coordinate (\BTKHeaderAnchor{c})  at ($(\BTKHeaderAnchor{nw})!0.5!(\BTKHeaderAnchor{se})$);
-
-  \coordinate (\BTKFooterAnchor{nw}) at ($(\BTKBodyAnchor{se}) -| (\BTKPageAnchor{nw})$);
-  \coordinate (\BTKFooterAnchor{se}) at (\BTKPageAnchor{se});
-  \coordinate (\BTKFooterAnchor{ne}) at ($(\BTKFooterAnchor{nw}) -| (\BTKFooterAnchor{se})$);
-  \coordinate (\BTKFooterAnchor{sw}) at ($(\BTKFooterAnchor{nw}) |- (\BTKFooterAnchor{se})$);
-  \coordinate (\BTKFooterAnchor{c})  at ($(\BTKFooterAnchor{nw})!0.5!(\BTKFooterAnchor{se})$);
-
-  % Define region anchors for current layout too (so overlays can reference regions)
-  \BTK@applylayout
+  \coordinate (\BTKPageAnchor{nw}) at (current page.north west);%
+  \coordinate (\BTKPageAnchor{ne}) at (current page.north east);%
+  \coordinate (\BTKPageAnchor{sw}) at (current page.south west);%
+  \coordinate (\BTKPageAnchor{se}) at (current page.south east);%
+  \coordinate (\BTKPageAnchor{c})  at (current page.center);%
+  % Body anchors
+  \coordinate (\BTKBodyAnchor{nw}) at ($(current page.north west)+(0,-\BTKHeaderH)$);%
+  \coordinate (\BTKBodyAnchor{se}) at ($(current page.south east)+(0,\BTKFooterH)$);%
+  \coordinate (\BTKBodyAnchor{ne}) at ($(\BTKBodyAnchor{nw}) -| (\BTKBodyAnchor{se})$);%
+  \coordinate (\BTKBodyAnchor{sw}) at ($(\BTKBodyAnchor{nw}) |- (\BTKBodyAnchor{se})$);%
+  \coordinate (\BTKBodyAnchor{c})  at ($(\BTKBodyAnchor{nw})!0.5!(\BTKBodyAnchor{se})$);%
+  % Header anchors
+  \coordinate (\BTKHeaderAnchor{nw}) at (\BTKPageAnchor{nw});%
+  \coordinate (\BTKHeaderAnchor{se}) at ($(\BTKBodyAnchor{nw}) -| (\BTKPageAnchor{se})$);%
+  \coordinate (\BTKHeaderAnchor{ne}) at ($(\BTKHeaderAnchor{nw}) -| (\BTKHeaderAnchor{se})$);%
+  \coordinate (\BTKHeaderAnchor{sw}) at ($(\BTKHeaderAnchor{nw}) |- (\BTKHeaderAnchor{se})$);%
+  \coordinate (\BTKHeaderAnchor{c})  at ($(\BTKHeaderAnchor{nw})!0.5!(\BTKHeaderAnchor{se})$);%
+  % Footer anchors
+  \coordinate (\BTKFooterAnchor{nw}) at ($(\BTKBodyAnchor{se}) -| (\BTKPageAnchor{nw})$);%
+  \coordinate (\BTKFooterAnchor{se}) at (\BTKPageAnchor{se});%
+  \coordinate (\BTKFooterAnchor{ne}) at ($(\BTKFooterAnchor{nw}) -| (\BTKFooterAnchor{se})$);%
+  \coordinate (\BTKFooterAnchor{sw}) at ($(\BTKFooterAnchor{nw}) |- (\BTKFooterAnchor{se})$);%
+  \coordinate (\BTKFooterAnchor{c})  at ($(\BTKFooterAnchor{nw})!0.5!(\BTKFooterAnchor{se})$);%
+  % Regions
+  \BTK@applylayout%
 }
-
 
 % ----------------------------
 % Master background: defines anchors + applies layout + draws background
