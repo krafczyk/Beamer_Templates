@@ -108,11 +108,11 @@
 
 % Helper: define region rectangle from NW and SE coords
 \newcommand{\BTKRegionRect}[3]{%
-  \coordinate (\BTKRegionAnchor{#1}{nw}) at #2;
-  \coordinate (\BTKRegionAnchor{#1}{se}) at #3;
-  \coordinate (\BTKRegionAnchor{#1}{ne}) at ($(\BTKRegionAnchor{#1}{nw}) -| (\BTKRegionAnchor{#1}{se})$);
-  \coordinate (\BTKRegionAnchor{#1}{sw}) at ($(\BTKRegionAnchor{#1}{nw}) |- (\BTKRegionAnchor{#1}{se})$);
-  \coordinate (\BTKRegionAnchor{#1}{c})  at ($(\BTKRegionAnchor{#1}{nw})!0.5!(\BTKRegionAnchor{#1}{se})$);
+  \coordinate (\BTKRegionAnchor{#1}{nw}) at #2;%
+  \coordinate (\BTKRegionAnchor{#1}{se}) at #3;%
+  \coordinate (\BTKRegionAnchor{#1}{ne}) at (\BTKRegionAnchor{#1}{nw} -| \BTKRegionAnchor{#1}{se});%
+  \coordinate (\BTKRegionAnchor{#1}{sw}) at (\BTKRegionAnchor{#1}{nw} |- \BTKRegionAnchor{#1}{se});%
+  \coordinate (\BTKRegionAnchor{#1}{c})  at ($(\BTKRegionAnchor{#1}{nw})!0.5!(\BTKRegionAnchor{#1}{se})$);%
 }
 
 % Built-in layouts
@@ -167,20 +167,20 @@
   % Body anchors
   \coordinate (\BTKBodyAnchor{nw}) at ($(current page.north west)+(0,-\BTKHeaderH)$);%
   \coordinate (\BTKBodyAnchor{se}) at ($(current page.south east)+(0,\BTKFooterH)$);%
-  \coordinate (\BTKBodyAnchor{ne}) at ($(\BTKBodyAnchor{nw}) -| (\BTKBodyAnchor{se})$);%
-  \coordinate (\BTKBodyAnchor{sw}) at ($(\BTKBodyAnchor{nw}) |- (\BTKBodyAnchor{se})$);%
+  \coordinate (\BTKBodyAnchor{ne}) at (\BTKBodyAnchor{nw} -| \BTKBodyAnchor{se});%
+  \coordinate (\BTKBodyAnchor{sw}) at (\BTKBodyAnchor{nw} |- \BTKBodyAnchor{se});%
   \coordinate (\BTKBodyAnchor{c})  at ($(\BTKBodyAnchor{nw})!0.5!(\BTKBodyAnchor{se})$);%
   % Header anchors
   \coordinate (\BTKHeaderAnchor{nw}) at (\BTKPageAnchor{nw});%
-  \coordinate (\BTKHeaderAnchor{se}) at ($(\BTKBodyAnchor{nw}) -| (\BTKPageAnchor{se})$);%
-  \coordinate (\BTKHeaderAnchor{ne}) at ($(\BTKHeaderAnchor{nw}) -| (\BTKHeaderAnchor{se})$);%
-  \coordinate (\BTKHeaderAnchor{sw}) at ($(\BTKHeaderAnchor{nw}) |- (\BTKHeaderAnchor{se})$);%
+  \coordinate (\BTKHeaderAnchor{se}) at (\BTKBodyAnchor{nw} -| \BTKPageAnchor{se});%
+  \coordinate (\BTKHeaderAnchor{ne}) at (\BTKHeaderAnchor{nw} -| \BTKHeaderAnchor{se});%
+  \coordinate (\BTKHeaderAnchor{sw}) at (\BTKHeaderAnchor{nw} |- \BTKHeaderAnchor{se});%
   \coordinate (\BTKHeaderAnchor{c})  at ($(\BTKHeaderAnchor{nw})!0.5!(\BTKHeaderAnchor{se})$);%
   % Footer anchors
-  \coordinate (\BTKFooterAnchor{nw}) at ($(\BTKBodyAnchor{se}) -| (\BTKPageAnchor{nw})$);%
+  \coordinate (\BTKFooterAnchor{nw}) at (\BTKBodyAnchor{se} -| \BTKPageAnchor{nw});%
   \coordinate (\BTKFooterAnchor{se}) at (\BTKPageAnchor{se});%
-  \coordinate (\BTKFooterAnchor{ne}) at ($(\BTKFooterAnchor{nw}) -| (\BTKFooterAnchor{se})$);%
-  \coordinate (\BTKFooterAnchor{sw}) at ($(\BTKFooterAnchor{nw}) |- (\BTKFooterAnchor{se})$);%
+  \coordinate (\BTKFooterAnchor{ne}) at (\BTKFooterAnchor{nw} -| \BTKFooterAnchor{se});%
+  \coordinate (\BTKFooterAnchor{sw}) at (\BTKFooterAnchor{nw} |- \BTKFooterAnchor{se});%
   \coordinate (\BTKFooterAnchor{c})  at ($(\BTKFooterAnchor{nw})!0.5!(\BTKFooterAnchor{se})$);%
   % Regions
   \BTK@applylayout%
