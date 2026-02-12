@@ -45,16 +45,60 @@
 \newif\ifBTKDebug
 \BTKDebugfalse
 
-% You can override these from main.tex if desired
-\def\BTKDebugColor{black}
-\def\BTKDebugLineWidth{0.6pt}
+% Default line widths
+\def\BTKDebugLWPage{0.9pt}
+\def\BTKDebugLWBody{0.9pt}
+\def\BTKDebugLWHeader{0.8pt}
+\def\BTKDebugLWFooter{0.8pt}
+\def\BTKDebugLWRegion{0.7pt}
 
-% Helper: draw a rectangle between two named coordinates
-\newcommand{\BTK@dbgrect}[2]{%
+% Default colors (dark, readable on white)
+\def\BTKDebugColorPage{black}
+\def\BTKDebugColorBody{black!80}
+\def\BTKDebugColorHeader{blue!70!black}
+\def\BTKDebugColorFooter{red!70!black}
+
+% Known region defaults
+\def\BTKDebugColorRegionMain{black}
+\def\BTKDebugColorRegionLeft{teal!70!black}
+\def\BTKDebugColorRegionRight{violet!70!black}
+\def\BTKDebugColorRegionText{green!60!black}
+\def\BTKDebugColorRegionImg{orange!80!black}
+
+% Unknown regions fall back
+\def\BTKDebugColorRegionOther{black}
+\def\BTKDebugLWRegionOther{0.7pt}
+
+% Rect helper: (color, line width, SW coord, NE coord)
+\newcommand{\BTK@dbgrect}[4]{%
   \ifBTKDebug%
-    \draw[draw=\BTKDebugColor,line width=\BTKDebugLineWidth]
-      (#1) rectangle (#2);%
+    \draw[draw=#1,line width=#2] (#3) rectangle (#4);%
   \fi%
+}
+
+% --- region registry so we can debug-draw ALL regions created by layouts ---
+\def\BTK@regionlist{} % comma-separated list of region names
+
+\newcommand{\BTK@regadd}[1]{%
+  % Append #1 if not already present
+  \ifcsundef{BTK@reg@seen@#1}{%
+    \csdef{BTK@reg@seen@#1}{}%
+    \ifx\BTK@regionlist\@empty
+      \edef\BTK@regionlist{#1}%
+    \else
+      \edef\BTK@regionlist{\BTK@regionlist,#1}%
+    \fi
+  }{}%
+}
+
+% Map region name -> debug color (known ones special-cased)
+\newcommand{\BTK@dbgregioncolor}[1]{%
+  \def\BTK@dbgcol{\BTKDebugColorRegionOther}%
+  \ifdefstring{#1}{main}{\def\BTK@dbgcol{\BTKDebugColorRegionMain}}{}%
+  \ifdefstring{#1}{left}{\def\BTK@dbgcol{\BTKDebugColorRegionLeft}}{}%
+  \ifdefstring{#1}{right}{\def\BTK@dbgcol{\BTKDebugColorRegionRight}}{}%
+  \ifdefstring{#1}{text}{\def\BTK@dbgcol{\BTKDebugColorRegionText}}{}%
+  \ifdefstring{#1}{img}{\def\BTK@dbgcol{\BTKDebugColorRegionImg}}{}%
 }
 
 % ----------------------------
@@ -133,6 +177,7 @@
 
 % Helper: define region rectangle from NW and SE coords
 \newcommand{\BTKRegionRect}[3]{%
+  \BTK@regadd{#1}%
   \coordinate (\BTKRegionAnchor{#1}{nw}) at #2;%
   \coordinate (\BTKRegionAnchor{#1}{se}) at #3;%
   \coordinate (\BTKRegionAnchor{#1}{ne}) at (\BTKRegionAnchor{#1}{nw} -| \BTKRegionAnchor{#1}{se});%
@@ -215,27 +260,21 @@
 \newcommand{\BTKDebugDraw}{%
   \ifBTKDebug%
     % Page / body / header / footer
-    \BTK@dbgrect{\BTKPageAnchor{sw}}{\BTKPageAnchor{ne}}%
-    \BTK@dbgrect{\BTKBodyAnchor{sw}}{\BTKBodyAnchor{ne}}%
-    \BTK@dbgrect{\BTKHeaderAnchor{sw}}{\BTKHeaderAnchor{ne}}%
-    \BTK@dbgrect{\BTKFooterAnchor{sw}}{\BTKFooterAnchor{ne}}%
-    % Common regions (only draw if they exist for this layout)
-    \@ifundefined{pgf@sh@ns@\BTKRegionAnchor{main}{nw}}{}{%
-      \BTK@dbgrect{\BTKRegionAnchor{main}{sw}}{\BTKRegionAnchor{main}{ne}}%
-    }%
-    \@ifundefined{pgf@sh@ns@\BTKRegionAnchor{left}{nw}}{}{%
-      \BTK@dbgrect{\BTKRegionAnchor{left}{sw}}{\BTKRegionAnchor{left}{ne}}%
-    }%
-    \@ifundefined{pgf@sh@ns@\BTKRegionAnchor{right}{nw}}{}{%
-      \BTK@dbgrect{\BTKRegionAnchor{right}{sw}}{\BTKRegionAnchor{right}{ne}}%
-    }%
-    \@ifundefined{pgf@sh@ns@\BTKRegionAnchor{text}{nw}}{}{%
-      \BTK@dbgrect{\BTKRegionAnchor{text}{sw}}{\BTKRegionAnchor{text}{ne}}%
-    }%
-    \@ifundefined{pgf@sh@ns@\BTKRegionAnchor{img}{nw}}{}{%
-      \BTK@dbgrect{\BTKRegionAnchor{img}{sw}}{\BTKRegionAnchor{img}{ne}}%
-    }%
+    \BTK@dbgrect{\BTKDebugColorPage}{\BTKDebugLWPage}{\BTKPageAnchor{sw}}{\BTKPageAnchor{ne}}%
+    \BTK@dbgrect{\BTKDebugColorBody}{\BTKDebugLWBody}{\BTKBodyAnchor{sw}}{\BTKBodyAnchor{ne}}%
+    \BTK@dbgrect{\BTKDebugColorHeader}{\BTKDebugLWHeader}{\BTKHeaderAnchor{sw}}{\BTKHeaderAnchor{ne}}%
+    \BTK@dbgrect{\BTKDebugColorFooter}{\BTKDebugLWFooter}{\BTKFooterAnchor{sw}}{\BTKFooterAnchor{ne}}%
+    % Regions registered by layouts
+    \forcsvlist\BTK@dbgdrawregion{\BTK@regionlist}%
   \fi%
+}
+
+\newcommand{\BTK@dbgdrawregion}[1]{%
+  % only draw if region coords exist for this frame
+  \@ifundefined{pgf@sh@ns@\BTKRegionAnchor{#1}{nw}}{}{%
+    \BTK@dbgregioncolor{#1}%
+    \BTK@dbgrect{\BTK@dbgcol}{\BTKDebugLWRegion}{\BTKRegionAnchor{#1}{sw}}{\BTKRegionAnchor{#1}{ne}}%
+  }%
 }
 
 % ----------------------------
@@ -303,9 +342,10 @@
       (BTK@placed@node) at (\BTKRegionAnchor{\BTK@regionname}{nw}) {\usebox{\BTK@regionbox}};%
     \ifBTKDebug%
       % Outline the region itself (not the content node), so you see expected bounds
-      \BTK@dbgrect{\BTKRegionAnchor{\BTK@regionname}{sw}}{\BTKRegionAnchor{\BTK@regionname}{ne}}%
+      \BTK@dbgregioncolor{\BTK@regionname}%
+      \BTK@dbgrect{\BTK@dbgcol}{\BTKDebugLWRegion}{\BTKRegionAnchor{\BTK@regionname}{sw}}{\BTKRegionAnchor{\BTK@regionname}{ne}}%
       % Outline the actual placed content box too (useful for inner sep / shifts)
-      \draw[draw=\BTKDebugColor,line width=\BTKDebugLineWidth]
+      \draw[draw=\BTK@dbgcol,line width=\BTKDebugLWRegion]
         (BTK@placed@node.south west) rectangle (BTK@placed@node.north east);%
     \fi%
   \end{tikzpicture}%
