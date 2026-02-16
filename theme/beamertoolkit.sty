@@ -228,14 +228,11 @@
 }
 
 \newcommand{\BTKBoxesInGroup}[2]{%
-  \typeout{Drawing boxes in group `#1`}%
   \BTKFilterBoxListByGroup{\BTK@boxlist}{#1}{#2}%
-  \typeout{Drawing boxes in group 2 `#2`}%
 }
 
 % Draw the box content (call inside BTKOverlay or any tikz overlay)
 \newcommand{\BTK@drawbox}[1]{%
-  \typeout{===>> Drawing box `#1` }%
   \BTK@boxassert{#1}%
   \@ifundefined{BTK@box@#1@content}{%
     \PackageError{beamertoolkit}{Box `#1` has no content}{}%
@@ -258,10 +255,7 @@
 
 % Public: draw all boxes in a group (call inside a tikzpicture/BTKOverlay)
 \newcommand{\BTKDrawBoxesInGroup}[1]{%
-  \typeout{Drawing boxes in group `#1`}%
-  \typeout{Box list: \BTK@boxlist}%
   \BTKBoxesInGroup{#1}{\BTK@boxlistingroup}%
-  \typeout{Found boxes in group `#1`: \BTK@boxlistingroup}%
   \forlistloop{\BTK@drawbox}{\BTK@boxlistingroup}%
 }
 
@@ -283,7 +277,8 @@
 \def\BTK@mode@color{color}
 \def\BTK@mode@none{none}
 
-\def\BTK@bgmode{image}
+\let\BTK@bgmode\BTK@mode@image  % init
+
 \def\BTK@bgfile{}
 \def\BTK@bgcolor{black}
 \def\BTK@bgopacity{1}
@@ -293,31 +288,35 @@
 \def\BTK@appendixbg{appendix}
 
 \newcommand{\BTKUseBackground}[1]{%
-  \def\BTK@bgmode{\BTK@mode@image}%
+  \typeout{Using background `#1`}%
+  \let\BTK@bgmode\BTK@mode@image%
   \edef\BTK@bgname{#1}%
   \@ifundefined{BTK@bgfile@\BTK@bgname}{%
-    \PackageError{beamertoolkit}{Unknown background `\BTK@bgname`}%
-      {Declare it with \string\BTKDeclareBackground\space before use.}%
+    \PackageError{beamertoolkit}{Unknown background `\BTK@bgname`}{...}%
     \def\BTK@bgfile{}%
   }{%
     \edef\BTK@bgfile{\csname BTK@bgfile@\BTK@bgname\endcsname}%
   }%
 }
 
-\newcommand{\BTKSetDefaultBackground}[1]{%
-  \edef\BTK@defaultbg{#1}%
-  \BTKUseBackground{#1}%
+\newcommand{\BTKUseBackgroundColor}[1]{%
+  \typeout{Using background color `#1`}%
+  \let\BTK@bgmode\BTK@mode@color%
+  \def\BTK@bgcolor{#1}%
 }
+
+\newcommand{\BTKNoBackground}{%
+  \typeout{No background set}%
+  \let\BTK@bgmode\BTK@mode@none%
+  % optional, for sanity in logs:
+  % \def\BTK@bgfile{}%
+}
+
 \newcommand{\BTKSetTitleBackground}[1]{\edef\BTK@titlebg{#1}}
 \newcommand{\BTKSetAppendixBackground}[1]{\edef\BTK@appendixbg{#1}}\newcommand{\BTKUseBackgroundFile}[1]{%
   \def\BTK@bgmode{\BTK@mode@image}%
   \edef\BTK@bgfile{#1}%
 }
-\newcommand{\BTKUseBackgroundColor}[1]{%
-  \def\BTK@bgmode{\BTK@mode@color}%
-  \def\BTK@bgcolor{#1}%
-}
-\newcommand{\BTKNoBackground}{\def\BTK@bgmode{\BTK@mode@none}}
 \newcommand{\BTKSetBackgroundOpacity}[1]{\def\BTK@bgopacity{#1}}
 
 \define@key{beamerframe}{bg}{\BTKUseBackground{#1}}
@@ -327,12 +326,16 @@
 \define@key{beamerframe}{bgnone}[true]{\BTKNoBackground}
 
 \newcommand{\BTK@drawbackground}{%
+  \typeout{Drawing background (mode=\BTK@bgmode, file=\BTK@bgfile, color=\BTK@bgcolor, opacity=\BTK@bgopacity)}%
   \ifx\BTK@bgmode\BTK@mode@none
+    \typeout{BTK: No background for this frame}%
     % nothing
   \else\ifx\BTK@bgmode\BTK@mode@color
+    \typeout{BTK: Drawing background color}%
     \fill[fill=\BTK@bgcolor,opacity=\BTK@bgopacity]
       (current page.south west) rectangle (current page.north east);%
   \else
+    \typeout{BTK: Drawing background image}%
     \node[inner sep=0pt,outer sep=0pt,opacity=\BTK@bgopacity] at (current page.center) {%
       \includegraphics[width=\paperwidth,keepaspectratio]{\BTK@bgfile}%
     };%
