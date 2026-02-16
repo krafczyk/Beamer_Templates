@@ -62,16 +62,19 @@
     \usebeamercolor{title page header}%
     \inserttitle
   }
+  \BTKBoxShowProperties{title}%
   \BTKBox{author}{%
     \usebeamerfont{author}%
     \usebeamercolor{author}%
     \insertauthor
   }
+  \BTKBoxShowProperties{author}%
   \BTKBox{date}{%
     \usebeamerfont{date}%
     \usebeamercolor{date}%
     \insertdate
   }
+  \BTKBoxShowProperties{date}%
   \BTKPrintBoxList{2}
 }
 \addtobeamertemplate{title page}{
@@ -83,21 +86,26 @@
     }{
       ($(current page.center) + (0,1.8cm) + (6cm,-1.0cm)$)
     }%
+    \BTKBoxShowProperties{title}%
     \BTKDeclareBox{author}{
       ($(current page.south west) + (0.5cm,2.9cm) + (0,0.7cm)$)
     }{
       ($(current page.south west) + (0.5cm,2.9cm) + (7cm,0cm)$)
     }%
+    \BTKBoxShowProperties{author}%
     \BTKDeclareBox{date}{
       ($(current page.south east) + (-0.5cm,2.9cm) + (-4cm,0.7cm)$)
     }{
       ($(current page.south east) + (-0.5cm,2.9cm) + (0cm,0cm)$)
     }%
+    \BTKBoxShowProperties{date}%
   \end{BTKOverlay}%
   \BTKPrintBoxList{4}
 }{
   \BTKPrintBoxList{5}%
+  \typeout{=== End title page template ===}%
   \begin{BTKOverlay}%
+    \typeout{=== End title page template in overlay ===}%
     \BTKDrawBoxesInGroup{title}%
   \end{BTKOverlay}%
   \BTKPrintBoxList{6}%
@@ -106,7 +114,7 @@
 % Title slide convenience wrapper (forces BTK frame keys)
 \newcommand{\TitleFrame}{%
   \BTKPrintBoxList{7}
-  \begin{frame}[plain,noframenumbering,bg=title]
+  \begin{frame}[plain,noframenumbering,bgnone=true]
     \BTKPrintBoxList{8}
     \titlepage
   \end{frame}
