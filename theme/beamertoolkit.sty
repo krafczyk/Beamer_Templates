@@ -247,8 +247,12 @@
     % draw debug box if debug mode is on
     \ifBTKDebug%
       \BTK@dbgstylefor{#1}%
-      \draw[draw=\BTK@dbgcol,line width=\BTK@dbglw]%
-      (\BTKBoxProp{#1}{sw}) rectangle (\BTKBoxProp{#1}{ne});%
+      \typeout{BTK: Drawing debug box for `#1` with color \BTK@dbgcol\space and line width \BTK@dbglw}%
+      % white halo first (thicker)
+      \draw[draw=white,line width=\dimexpr\BTK@dbglw+1.5pt\relax]
+        (\BTKBoxProp{#1}{sw}) rectangle (\BTKBoxProp{#1}{ne});
+      \draw[draw=\BTK@dbgcol,line width=\BTK@dbglw]
+        (\BTKBoxProp{#1}{sw}) rectangle (\BTKBoxProp{#1}{ne});
     \fi%
   }%
 }
@@ -264,6 +268,11 @@
   \forlistloop{\BTK@boxremove}{\BTK@boxlist}%
   \BTK@boxlistclear
 }
+
+% -------------
+% Layouts
+% -------------
+
 
 % ----------------------------
 % Background registry and per-frame state

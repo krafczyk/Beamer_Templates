@@ -4,49 +4,49 @@
 
 \begin{frame}[layout=full]{Full layout (main region)}
   % per-slide footer tweak:
-  \BTKSetSlot{footleft}{Draft}
+  \BTKBox{footleft}{Draft}
 
-  \begin{BTKRegion}{main}
+  \BTKBox{main}{
     \begin{itemize}
       \item This slide uses \texttt{layout=full} and fills \texttt{main}.
       \item Slot example: \texttt{\string\BTKSetSlot\{footleft\}\{Draft\}}.
       \item Even spacing helpers: \texttt{\string\hfill}, \texttt{\string\vfill}, or BTK lists.
     \end{itemize}
-  \end{BTKRegion}
+  }
 \end{frame}
 
-\begin{frame}[layout=two-col]{Two columns (left/right regions)}
-  \begin{BTKRegion}{left}
-    \textbf{Left}\\[0.5em]
-    \begin{itemize}
-      \item bullets
-      \item more bullets
-    \end{itemize}
-  \end{BTKRegion}
+% \begin{frame}[layout=two-col]{Two columns (left/right regions)}
+%   \begin{BTKRegion}{left}
+%     \textbf{Left}\\[0.5em]
+%     \begin{itemize}
+%       \item bullets
+%       \item more bullets
+%     \end{itemize}
+%   \end{BTKRegion}
 
-  \begin{BTKRegion}{right}
-    \textbf{Right}\\[0.5em]
-    \begin{itemize}
-      \item figures/tables fit well
-      \item or equations
-    \end{itemize}
-  \end{BTKRegion}
-\end{frame}
+%   \begin{BTKRegion}{right}
+%     \textbf{Right}\\[0.5em]
+%     \begin{itemize}
+%       \item figures/tables fit well
+%       \item or equations
+%     \end{itemize}
+%   \end{BTKRegion}
+% \end{frame}
 
-\begin{frame}[layout=img-right]{Text + image (img-right)}
-  \begin{BTKRegion}{text}
-    \textbf{Detector stack}\\[0.5em]
-    \begin{itemize}
-      \item Silicon tracker: measures charged-particle tracks (curvature $\rightarrow p_T$)
-      \item Calorimeters: measure energy deposition (EM + hadronic)
-    \end{itemize}
-  \end{BTKRegion}
+% \begin{frame}[layout=img-right]{Text + image (img-right)}
+%   \begin{BTKRegion}{text}
+%     \textbf{Detector stack}\\[0.5em]
+%     \begin{itemize}
+%       \item Silicon tracker: measures charged-particle tracks (curvature $\rightarrow p_T$)
+%       \item Calorimeters: measure energy deposition (EM + hadronic)
+%     \end{itemize}
+%   \end{BTKRegion}
 
-  \begin{BTKRegion}{img}
-    \centering
-    \includegraphics[width=\linewidth]{example_detail.png}
-  \end{BTKRegion}
-\end{frame}
+%   \begin{BTKRegion}{img}
+%     \centering
+%     \includegraphics[width=\linewidth]{example_detail.png}
+%   \end{BTKRegion}
+% \end{frame}
 
 % \section{Layouts}
 

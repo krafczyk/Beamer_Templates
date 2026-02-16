@@ -54,52 +54,61 @@
 }
 \makeatother
 
-% \BTKDeclareBox}[3]{%  % box name, NW coord, SE coord
-\setbeamertemplate{title page}{
-  \BTKBox{title}{%
-    \usebeamerfont{title page header}%
-    \usebeamercolor{title page header}%
-    \inserttitle
-  }
-  \BTKBox{author}{%
-    \usebeamerfont{author}%
-    \usebeamercolor{author}%
-    \insertauthor
-  }
-  \BTKBox{date}{%
-    \usebeamerfont{date}%
-    \usebeamercolor{date}%
-    \insertdate
-  }
+\define@key{beamerframe}{layout}{
+  \ifstrequal{#1}{title}{%
+    \addtobeamertemplate{title page}{
+      \BTKSetCurrentBoxGroup{title}%
+      \begin{BTKOverlay}%
+        \BTKDeclareBox{title}{
+          ($(current page.center) + (0,1.8cm) + (-6cm,1.0cm)$)
+        }{
+          ($(current page.center) + (0,1.8cm) + (6cm,-1.0cm)$)
+        }%
+        \BTKDeclareBox{author}{
+          ($(current page.south west) + (0.5cm,2.9cm) + (0,0.7cm)$)
+        }{
+          ($(current page.south west) + (0.5cm,2.9cm) + (7cm,0cm)$)
+        }%
+        \BTKDeclareBox{date}{
+          ($(current page.south east) + (-0.5cm,2.9cm) + (-4cm,0.7cm)$)
+        }{
+          ($(current page.south east) + (-0.5cm,2.9cm) + (0cm,0cm)$)
+        }%
+      \end{BTKOverlay}%
+    }{
+      \begin{BTKOverlay}%
+        \BTKDrawBoxesInGroup{title}%
+      \end{BTKOverlay}%
+    }
+
+    % clear beamer templates
+    \setbeamertemplate{title page}{
+      \BTKBox{title}{%
+        \usebeamerfont{title page header}%
+        \usebeamercolor[fg]{title page header}%
+        \inserttitle
+      }
+      \BTKBox{author}{%
+        \usebeamerfont{author}%
+        \usebeamercolor[fg]{author}%
+        \insertauthor
+      }
+      \BTKBox{date}{%
+        \usebeamerfont{date}%
+        \usebeamercolor[fg]{date}%
+        \insertdate
+      }
+    }
+  } \else\ifstrequal{#1}{full}{%
+  } \else {
+    \typeout{Unknown layout '#1'!}%
+  }%
 }
-\addtobeamertemplate{title page}{
-  \BTKSetCurrentBoxGroup{title}%
-  \begin{BTKOverlay}%
-    \BTKDeclareBox{title}{
-      ($(current page.center) + (0,1.8cm) + (-6cm,1.0cm)$)
-    }{
-      ($(current page.center) + (0,1.8cm) + (6cm,-1.0cm)$)
-    }%
-    \BTKDeclareBox{author}{
-      ($(current page.south west) + (0.5cm,2.9cm) + (0,0.7cm)$)
-    }{
-      ($(current page.south west) + (0.5cm,2.9cm) + (7cm,0cm)$)
-    }%
-    \BTKDeclareBox{date}{
-      ($(current page.south east) + (-0.5cm,2.9cm) + (-4cm,0.7cm)$)
-    }{
-      ($(current page.south east) + (-0.5cm,2.9cm) + (0cm,0cm)$)
-    }%
-  \end{BTKOverlay}%
-}{
-  \begin{BTKOverlay}%
-    \BTKDrawBoxesInGroup{title}%
-  \end{BTKOverlay}%
-}
+
 
 % Title slide convenience wrapper (forces BTK frame keys)
 \newcommand{\TitleFrame}{%
-  \begin{frame}[plain,noframenumbering,bg=title]
+  \begin{frame}[plain,noframenumbering,bg=title,layout=title]
     \titlepage
   \end{frame}
 }
