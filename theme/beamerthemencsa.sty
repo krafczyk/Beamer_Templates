@@ -74,19 +74,19 @@
         \usebeamercolor[fg]{title page header}%
         \usebeamerfont{title page header}%
         \inserttitle
-      };
+      }
       % Author/date near bottom
       \coordinate (NCSA@a@nw) at ($(current page.south west)+(0.1cm,3.05cm)$);
       \coordinate (NCSA@a@se) at ($(current page.south west)+(12cm,2.00cm)$);
       \BTKRectMP[\BTKDrawOpt][c][c]{NCSA@a@nw}{NCSA@a@se}{%
         \usebeamerfont{author}\insertauthor
-      };
+      }
       \coordinate (NCSA@d@nw) at ($(current page.south east)+(-4cm,3.05cm)$);
       \coordinate (NCSA@d@se) at ($(current page.south east)+(-0.1cm,2.00cm)$);
       \BTKRectMP[\BTKDrawOpt][c][c]{NCSA@d@nw}{NCSA@d@se}{%
         \raggedleft
         \usebeamerfont{date}\insertdate
-      };
+      }
     \end{BTKOverlay}
   }
   \setbeamertemplate{footline}{}
@@ -97,14 +97,18 @@
 \BTKDefineLayout{full}{
   \setbeamertemplate{title page}{}
   \setbeamertemplate{btk overlay}{
-    \begin{BTKOverlay}
-      % Title box corners
-      \coordinate (NCSA@t1@nw) at ($(current page.north west)+(0.3pt,-1.1cm)$);
-      \coordinate (NCSA@t1@se) at ($(current page.south east)+(-0.3pt,1.1cm)$);
-      \BTKRectMP[\BTKDrawOpt][c][c]{NCSA@t1@nw}{NCSA@t1@se}{%
-        \BTKGetContent{text}%
-      };
-    \end{BTKOverlay}
+    \typeout{=== BTK: full layout overlay ===}%
+    \BTKDbgContent{text}
+    % Main text box
+    %\coordinate (NCSA@t1@nw) at ($(current page.north west)+(0.3pt,-1.1cm)$);
+    \coordinate (NCSA@t1@nw) at ($(current page.north west)+(5cm,-1.1cm)$);
+    %\coordinate (NCSA@t1@se) at ($(current page.south east)+(-0.3pt,1.1cm)$);
+    \coordinate (NCSA@t1@se) at ($(current page.south east)+(-5cm,1.1cm)$);
+    \BTKRectMP*[fill=none,\BTKDrawOpt][c][c]{NCSA@t1@nw}{NCSA@t1@se}{%
+      \usebeamercolor[fg]{normal text}%
+      \usebeamerfont{normal text}%
+      \BTKGetContent{text}%
+    }
   }
   \setbeamertemplate{footline}{}
   \setbeamertemplate{frametitle}{%
@@ -113,13 +117,13 @@
       \coordinate (b1) at ($(current page.north west)+(0cm,0cm)$);
       \coordinate (b2) at ($(current page.north east)+(0cm,-1cm)$);
       \path[fill=ncsagrey] (b1) rectangle (b2);
-      \coordinate (NCSA@t@nw) at ($(current page.north west)+(0.3pt,-0cm)$);
-      \coordinate (NCSA@t@se) at ($(current page.north east)+(-0.3pt,-1cm)$);
+      \coordinate (NCSA@t@nw) at ($(current page.north west)+(3pt,-0cm)$);
+      \coordinate (NCSA@t@se) at ($(current page.north east)+(-3pt,-1cm)$);
       \BTKRectMP[\BTKDrawOpt][c][c]{NCSA@t@nw}{NCSA@t@se}{%
         \usebeamercolor[fg]{title page header}%
         \usebeamerfont{title page header}%
-        \inserttitle
-      };
+        \insertframetitle
+      }
     \end{BTKOverlay}
   }
   \setbeamertemplate{framesubtitle}{}

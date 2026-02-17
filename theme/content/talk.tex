@@ -5,12 +5,15 @@
 \begin{frame}[layout=full]{Full layout (main region)}
   % per-slide footer tweak:
 
+  \typeout{===> Saving content text!}%
   \BTKContent{text}{
     \begin{itemize}
       \item This slide uses \texttt{layout=full} and fills \texttt{main}.
       \item Even spacing helpers: \texttt{\string\hfill}, \texttt{\string\vfill}, or BTK lists.
     \end{itemize}
   }
+  \BTKDbgContent{text}
+  %\typeout{---> [\BTKGetContent{text}]}
 \end{frame}
 
 % \begin{frame}[layout=two-col]{Two columns (left/right regions)}
