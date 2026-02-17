@@ -64,26 +64,23 @@
       % Title box corners
       \coordinate (NCSA@t@nw) at ($(current page.north west)+(0.3pt,-0.4cm)$);
       \coordinate (NCSA@t@se) at ($(current page.north east)+(-0.3pt,-5.7cm)$);
-      \BTKRectMPOld[\BTKDrawOpt][c][c]{NCSA@t@nw}{NCSA@t@se}{%
+      \BTKRectMP[\BTKDrawOpt][c][c]{NCSA@t@nw}{NCSA@t@se}{%
         \centering
         \usebeamercolor[fg]{title page header}%
         \usebeamerfont{title page header}%
         \inserttitle
       };
       % Author/date near bottom
-      \coordinate (NCSA@a@nw) at ($(current page.south west)+(0.5cm,3.2cm)$);
-      \coordinate (NCSA@a@se) at ($(current page.south west)+(2cm,2.5cm)$);
-      \BTKRectMPOld[\BTKDrawOpt][c][c]{NCSA@a@nw}{NCSA@a@se}{%
+      \coordinate (NCSA@a@nw) at ($(current page.south west)+(0.1cm,3.05cm)$);
+      \coordinate (NCSA@a@se) at ($(current page.south west)+(12cm,2.00cm)$);
+      \BTKRectMP[\BTKDrawOpt][c][c]{NCSA@a@nw}{NCSA@a@se}{%
         \usebeamerfont{author}\insertauthor
       };
-      \coordinate (NCSA@d) at ($(current page.south east)+(-0.5cm,2.9cm)$);
-      \node[inner sep=0pt,outer sep=0pt,left] at (NCSA@d) {%
-        \begin{minipage}{4cm}
-          \begin{beamercolorbox}[wd=4cm]{date}
-            \raggedleft
-            \usebeamerfont{date}\insertdate
-          \end{beamercolorbox}
-        \end{minipage}
+      \coordinate (NCSA@d@nw) at ($(current page.south east)+(-4cm,3.05cm)$);
+      \coordinate (NCSA@d@se) at ($(current page.south east)+(-0.1cm,2.00cm)$);
+      \BTKRectMP[\BTKDrawOpt][c][c]{NCSA@d@nw}{NCSA@d@se}{%
+        \raggedleft
+        \usebeamerfont{date}\insertdate
       };
     \end{BTKOverlay}
   }
