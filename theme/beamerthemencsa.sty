@@ -40,6 +40,9 @@
 \setbeamercolor*{framesubtitle}{fg=white}
 \setbeamerfont*{framesubtitle}{size=\normalsize}
 
+\setbeamercolor*{footline}{fg=white}
+\setbeamerfont*{footline}{size=\large}
+
 \setbeamercolor*{author}{fg=ncsagrey}
 \setbeamercolor*{date}{fg=ncsagrey}
 \setbeamercolor*{normal text}{fg=ncsagrey}
@@ -97,20 +100,26 @@
 \BTKDefineLayout{full}{
   \setbeamertemplate{title page}{}
   \setbeamertemplate{btk overlay}{
-    \typeout{=== BTK: full layout overlay ===}%
-    \BTKDbgContent{text}
     % Main text box
-    %\coordinate (NCSA@t1@nw) at ($(current page.north west)+(0.3pt,-1.1cm)$);
-    \coordinate (NCSA@t1@nw) at ($(current page.north west)+(5cm,-1.1cm)$);
-    %\coordinate (NCSA@t1@se) at ($(current page.south east)+(-0.3pt,1.1cm)$);
-    \coordinate (NCSA@t1@se) at ($(current page.south east)+(-5cm,1.1cm)$);
-    \BTKRectMP*[fill=none,\BTKDrawOpt][c][c]{NCSA@t1@nw}{NCSA@t1@se}{%
+    \coordinate (NCSA@t1@nw) at ($(current page.north west)+(2pt,-1.05cm)$);
+    \coordinate (NCSA@t1@se) at ($(current page.south east)+(-2pt,1.05cm)$);
+    \BTKRectMP[fill=none,\BTKDrawOpt][c][t]{NCSA@t1@nw}{NCSA@t1@se}{%
       \usebeamercolor[fg]{normal text}%
       \usebeamerfont{normal text}%
       \BTKGetContent{text}%
     }
   }
-  \setbeamertemplate{footline}{}
+  \setbeamertemplate{footline}{%
+    \begin{BTKOverlay}
+      % slide numbers box
+      \coordinate (NCSA@footnumber@nw) at ($(current page.south)+(-1cm,0.7cm)$);
+      \coordinate (NCSA@footnumber@se) at ($(current page.south)+(1cm,0cm)$);
+      \BTKRectMP[fill=none][c][c]{NCSA@footnumber@nw}{NCSA@footnumber@se}{%
+        \centering
+        \usebeamercolor[fg]{footline}\usebeamerfont{footline}\insertframenumber/\insertmainframenumber
+      }
+    \end{BTKOverlay}
+  }
   \setbeamertemplate{frametitle}{%
     \begin{BTKOverlay}
       % Title box corners
