@@ -5,6 +5,7 @@
 \mode<presentation>
 
 \RequirePackage{beamertoolkit}
+\RequirePackage{etoolbox}
 \usetikzlibrary{calc}
 
 % assets live here (theme may append; author adds figs/ separately)
@@ -45,10 +46,6 @@
 
 \setbeamertemplate{navigation symbols}{}
 
-% Define beamer template for title
-% title background
-\BTKUseBackground{title}%
-
 \makeatletter
 \newcommand{\BTKPrintBoxList}[1]{%
   \typeout{=== (#1), BTK@boxlist = [\BTK@boxlist] ===}%
@@ -58,7 +55,15 @@
 % Install base BTK templates required.
 \BTKInstallTemplates
 
+% runs BEFORE beamer parses [key=val,...] for the frame
+\BeforeBeginEnvironment{frame}{%
+  \BTKUseBackground{default}%
+  \BTKSetBackgroundOpacity{1}%
+  % reset any per-frame BTK state here too
+}
+
 \BTKDefineLayout{title}{
+  \BTKUseBackground{title}%
   \setbeamertemplate{title page}{
     \begin{BTKOverlay}
       % Title box corners
@@ -87,6 +92,37 @@
   \setbeamertemplate{footline}{}
   \setbeamertemplate{frametitle}{}
   \setbeamertemplate{btk overlay}{}
+}
+
+\BTKDefineLayout{full}{
+  \setbeamertemplate{title page}{}
+  \setbeamertemplate{btk overlay}{
+    \begin{BTKOverlay}
+      % Title box corners
+      \coordinate (NCSA@t1@nw) at ($(current page.north west)+(0.3pt,-1.1cm)$);
+      \coordinate (NCSA@t1@se) at ($(current page.south east)+(-0.3pt,1.1cm)$);
+      \BTKRectMP[\BTKDrawOpt][c][c]{NCSA@t1@nw}{NCSA@t1@se}{%
+        \BTKGetContent{text}%
+      };
+    \end{BTKOverlay}
+  }
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{frametitle}{%
+    \begin{BTKOverlay}
+      % Title box corners
+      \coordinate (b1) at ($(current page.north west)+(0cm,0cm)$);
+      \coordinate (b2) at ($(current page.north east)+(0cm,-1cm)$);
+      \path[fill=ncsagrey] (b1) rectangle (b2);
+      \coordinate (NCSA@t@nw) at ($(current page.north west)+(0.3pt,-0cm)$);
+      \coordinate (NCSA@t@se) at ($(current page.north east)+(-0.3pt,-1cm)$);
+      \BTKRectMP[\BTKDrawOpt][c][c]{NCSA@t@nw}{NCSA@t@se}{%
+        \usebeamercolor[fg]{title page header}%
+        \usebeamerfont{title page header}%
+        \inserttitle
+      };
+    \end{BTKOverlay}
+  }
+  \setbeamertemplate{framesubtitle}{}
 }
 
 % Title slide convenience wrapper (forces BTK frame keys)
