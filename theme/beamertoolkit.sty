@@ -1,5 +1,7 @@
 \RequirePackage{etoolbox}
 \RequirePackage{tikz} % loads pgfkeys
+\RequirePackage{xparse} % need for \NewDocumentCommand
+
 \makeatletter
 
 % ------------------------------------------------------------
@@ -71,6 +73,45 @@
 }
 \newcommand{\BTKGetOptionOr}[2]{%
   \pgfkeysifdefined{/btk/opt/#1}{\pgfkeysvalueof{/btk/opt/#1}}{#2}%
+}
+
+% ------------------------------------------------------------
+% Draw Helpers
+% ------------------------------------------------------------
+% \BTKRectMP[<tikz node opts>][<mp pos>][<mp inner-pos>]{<NW>}{<SE>}{<content>}
+% - <NW>, <SE> are coordinates (names or full calc expressions)
+% - node is placed at NW, sized by (SE.x-NW.x) and (NW.y-SE.y)
+\NewDocumentCommand{\BTKRectMPOld}{ O{} O{c} O{c} m m +m }{%
+  \path let \p1=(#4), \p2=(#5) in
+    node[
+      anchor=north west,
+      inner sep=0pt, outer sep=0pt,
+      fill=none,
+      #1%
+    ] at (\p1) {%
+      \begin{minipage}[#2][\dimexpr\y1-\y2\relax][#3]{\dimexpr\x2-\x1\relax}%
+        #6%
+      \end{minipage}%
+    };%
+}
+% \BTKRectMP*[<tikz node opts>][<mp pos>][<mp inner-pos>]{<NW>}{<SE>}{<content>}
+% Star (*) enables clipping to the rectangle.
+\NewDocumentCommand{\BTKRectMP}{ s O{} O{c} O{c} m m +m }{%
+  \path let \p1=(#5), \p2=(#6) in
+  \begin{scope}%
+    \IfBooleanT{#1}{\clip (\p1) rectangle (\p2);}%
+    \node[
+      anchor=north west,
+      inner sep=0pt, outer sep=0pt,
+      fill=none,
+      \BTKDrawOpt, % <-- default outline/no-outline
+      #2%          % <-- user overrides go last
+    ] at (\p1) {%
+      \begin{minipage}[#3][\dimexpr\y1-\y2\relax][#4]{\dimexpr\x2-\x1\relax}%
+        #7%
+      \end{minipage}%
+    };%
+  \end{scope}%
 }
 
 % ------------------------------------------------------------
