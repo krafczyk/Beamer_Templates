@@ -7,6 +7,7 @@
 \RequirePackage{beamertoolkit}
 \RequirePackage{etoolbox}
 \usetikzlibrary{calc}
+\RequirePackage{fontspec}
 
 % assets live here (theme may append; author adds figs/ separately)
 \BTKAppendGraphicPath{theme/assets/}
@@ -32,28 +33,27 @@
 \BTKUseBackground{default} % theme default (author can override per frame)
 
 % Fonts/colors
+%\setsansfont{Arial}
+%\setmainfont{Arial}
+\setsansfont{Liberation Sans}
+\setmainfont{Liberation Sans}
+\setmonofont{Ubuntu Mono}
 \setbeamercolor*{title page header}{fg=white}
-\setbeamerfont*{title page header}{size=\Huge}
+\setbeamerfont*{title page header}{family=\sffamily,series=\bfseries,size=\Huge}
 
 \setbeamercolor*{frametitle}{fg=white}
-\setbeamerfont*{frametitle}{size=\Large}
+\setbeamerfont*{frametitle}{family=\sffamily,series=\bfseries,size=\fontsize{16}{20}\selectfont}
 \setbeamercolor*{framesubtitle}{fg=white}
-\setbeamerfont*{framesubtitle}{size=\normalsize}
+\setbeamerfont*{framesubtitle}{family=\sffamily,series=\bfseries,size=\normalsize}
 
 \setbeamercolor*{footline}{fg=white}
-\setbeamerfont*{footline}{size=\large}
+\setbeamerfont*{footline}{family=\sffamily,series=\bfseries,size=\large}
 
 \setbeamercolor*{author}{fg=ncsagrey}
 \setbeamercolor*{date}{fg=ncsagrey}
 \setbeamercolor*{normal text}{fg=ncsagrey}
 
 \setbeamertemplate{navigation symbols}{}
-
-\makeatletter
-\newcommand{\BTKPrintBoxList}[1]{%
-  \typeout{=== (#1), BTK@boxlist = [\BTK@boxlist] ===}%
-}
-\makeatother
 
 % Install base BTK templates required.
 \BTKInstallTemplates
@@ -123,14 +123,14 @@
   \setbeamertemplate{frametitle}{%
     \begin{BTKOverlay}
       % Title box corners
-      \coordinate (b1) at ($(current page.north west)+(0cm,0cm)$);
+      \coordinate (b1) at ($(current page.north west)+(0cm,-4pt)$);
       \coordinate (b2) at ($(current page.north east)+(0cm,-1cm)$);
       \path[fill=ncsagrey] (b1) rectangle (b2);
-      \coordinate (NCSA@t@nw) at ($(current page.north west)+(3pt,-0cm)$);
+      \coordinate (NCSA@t@nw) at ($(current page.north west)+(3pt,-4pt)$);
       \coordinate (NCSA@t@se) at ($(current page.north east)+(-3pt,-1cm)$);
       \BTKRectMP[\BTKDrawOpt][c][c]{NCSA@t@nw}{NCSA@t@se}{%
-        \usebeamercolor[fg]{title page header}%
-        \usebeamerfont{title page header}%
+        \usebeamercolor[fg]{frametitle}%
+        \usebeamerfont{frametitle}%
         \insertframetitle
       }
     \end{BTKOverlay}

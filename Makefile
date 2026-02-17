@@ -7,7 +7,7 @@ TEXINPUTS_PREFIX := $(THEME_DIR)//:
 
 MAIN      := main.tex
 OUTDIR    := build
-ENGINE    ?= pdflatex
+ENGINE    ?= lualatex
 # pdflatex | lualatex | xelatex
 
 LATEXMK   := latexmk
