@@ -79,6 +79,18 @@
 \newif\ifBTKDebug
 \BTKDebugfalse
 
+\tikzset{
+  btk/outline/.style   ={draw=black,line width=0.8pt},
+  btk/nooutline/.style={draw=none},
+}
+
+\newif\ifBTKOutline
+\BTKOutlinefalse % set true to see borders
+
+\newcommand{\BTKDrawOpt}{%
+  \ifBTKOutline btk/outline\else btk/nooutline\fi
+}
+
 % ----------------------------
 % Background registry and per-frame state
 % ----------------------------
