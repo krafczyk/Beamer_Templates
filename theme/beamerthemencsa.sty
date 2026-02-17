@@ -5,6 +5,7 @@
 \mode<presentation>
 
 \RequirePackage{beamertoolkit}
+\usetikzlibrary{calc}
 
 % assets live here (theme may append; author adds figs/ separately)
 \BTKAppendGraphicPath{theme/assets/}
@@ -54,57 +55,45 @@
 }
 \makeatother
 
-\define@key{beamerframe}{layout}{
-  \ifstrequal{#1}{title}{%
-    \addtobeamertemplate{title page}{
-      \BTKSetCurrentBoxGroup{title}%
-      \begin{BTKOverlay}%
-        \BTKDeclareBox{title}{
-          ($(current page.center) + (0,1.8cm) + (-6cm,1.0cm)$)
-        }{
-          ($(current page.center) + (0,1.8cm) + (6cm,-1.0cm)$)
-        }%
-        \BTKDeclareBox{author}{
-          ($(current page.south west) + (0.5cm,2.9cm) + (0,0.7cm)$)
-        }{
-          ($(current page.south west) + (0.5cm,2.9cm) + (7cm,0cm)$)
-        }%
-        \BTKDeclareBox{date}{
-          ($(current page.south east) + (-0.5cm,2.9cm) + (-4cm,0.7cm)$)
-        }{
-          ($(current page.south east) + (-0.5cm,2.9cm) + (0cm,0cm)$)
-        }%
-      \end{BTKOverlay}%
-    }{
-      \begin{BTKOverlay}%
-        \BTKDrawBoxesInGroup{title}%
-      \end{BTKOverlay}%
-    }
+% Install base BTK templates required.
+\BTKInstallTemplates
 
-    % clear beamer templates
-    \setbeamertemplate{title page}{
-      \BTKBox{title}{%
-        \usebeamerfont{title page header}%
-        \usebeamercolor[fg]{title page header}%
-        \inserttitle
-      }
-      \BTKBox{author}{%
-        \usebeamerfont{author}%
-        \usebeamercolor[fg]{author}%
-        \insertauthor
-      }
-      \BTKBox{date}{%
-        \usebeamerfont{date}%
-        \usebeamercolor[fg]{date}%
-        \insertdate
-      }
-    }
-  } \else\ifstrequal{#1}{full}{%
-  } \else {
-    \typeout{Unknown layout '#1'!}%
-  }%
+\BTKDefineLayout{title}{
+  \setbeamertemplate{title page}{
+    \begin{BTKOverlay}
+      % Title box centered, shifted up a bit (approx your old look)
+      \coordinate (NCSA@t) at ($(current page.center)+(0,1.8cm)$);
+      \node[inner sep=0pt,outer sep=0pt] at (NCSA@t) {%
+        \begin{beamercolorbox}[wd=12cm]{title page header}
+          \begin{center}
+            \usebeamerfont{title page header}\inserttitle
+          \end{center}
+        \end{beamercolorbox}
+      };
+      % Author/date near bottom
+      \coordinate (NCSA@a) at ($(current page.south west)+(0.5cm,2.9cm)$);
+      \node[inner sep=0pt,outer sep=0pt,right] at (NCSA@a) {%
+        \begin{minipage}{7cm}
+          \begin{beamercolorbox}[wd=7cm]{author}
+            \usebeamerfont{author}\insertauthor
+          \end{beamercolorbox}
+        \end{minipage}
+      };
+      \coordinate (NCSA@d) at ($(current page.south east)+(-0.5cm,2.9cm)$);
+      \node[inner sep=0pt,outer sep=0pt,left] at (NCSA@d) {%
+        \begin{minipage}{4cm}
+          \begin{beamercolorbox}[wd=4cm]{date}
+            \raggedleft
+            \usebeamerfont{date}\insertdate
+          \end{beamercolorbox}
+        \end{minipage}
+      };
+    \end{BTKOverlay}
+  }
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{frametitle}{}
+  \setbeamertemplate{btk overlay}{}
 }
-
 
 % Title slide convenience wrapper (forces BTK frame keys)
 \newcommand{\TitleFrame}{%

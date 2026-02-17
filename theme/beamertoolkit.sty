@@ -1,12 +1,5 @@
-% theme/beamertoolkit.sty
-\NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{beamertoolkit}[2026/02/15 BTK: boxes location definition and content insertion]
-
 \RequirePackage{etoolbox}
-\RequirePackage{graphicx}
-\RequirePackage{tikz}
-\usetikzlibrary{calc}
-
+\RequirePackage{tikz} % loads pgfkeys
 \makeatletter
 
 % ------------------------------------------------------------
@@ -40,239 +33,51 @@
 }
 
 % ------------------------------------------------------------
+% Store/Retrieve API
+% ------------------------------------------------------------
+% Backing store: PGF keys
+%   /btk/content/<name>  -> token list (content)
+%   /btk/opt/<name>      -> token list (options)
+%   /btk/layout/<name>      -> token list (layout)
+% ------------------------------------------------------------
+\pgfkeys{
+  /btk/.is family,
+  /btk/content/.is family,
+  /btk/opt/.is family,
+  /btk/layout/.is family,
+  % unknown layouts -> BTK error
+  /btk/layout/.unknown/.code = {%
+    \PackageError{beamertoolkit}{Unknown layout `\pgfkeyscurrentname`}{%
+      Define it with \string\BTKDefineLayout\space before use.%
+    }%
+  },
+}
+
+% Setters (store values)
+\newcommand{\BTKContent}[2]{%
+  % stores tokens literally; safe for paragraphs too
+  \pgfkeyssetvalue{/btk/content/#1}{#2}%
+}
+\newcommand{\BTKOption}[2]{%
+  \pgfkeyssetvalue{/btk/opt/#1}{#2}%
+}
+
+% Getters (return empty if not defined)
+\newcommand{\BTKGetContent}[1]{%
+  \pgfkeysifdefined{/btk/content/#1}{\pgfkeysvalueof{/btk/content/#1}}{}%
+}
+\newcommand{\BTKGetOption}[1]{%
+  \pgfkeysifdefined{/btk/opt/#1}{\pgfkeysvalueof{/btk/opt/#1}}{}%
+}
+\newcommand{\BTKGetOptionOr}[2]{%
+  \pgfkeysifdefined{/btk/opt/#1}{\pgfkeysvalueof{/btk/opt/#1}}{#2}%
+}
+
+% ------------------------------------------------------------
 % Debug mode (optional)
 % ------------------------------------------------------------
 \newif\ifBTKDebug
 \BTKDebugfalse
-
-% Default debug style
-\def\BTKDebugLWDefault{0.8pt}
-\def\BTKDebugColorDefault{black}
-
-% Per-box debug style setters
-\newcommand{\BTKSetBoxDebugStyle}[3]{%
-  \@namedef{BTK@box@#1@dbgcol}{#2}%
-  \@namedef{BTK@box@#1@dbglw}{#3}%
-}
-
-% Some nice defaults for common names (theme can override via BTKSetRectDebugStyle)
-\BTKSetBoxDebugStyle{page}{black}{0.9pt}
-\BTKSetBoxDebugStyle{header}{blue!70!black}{0.8pt}
-\BTKSetBoxDebugStyle{footer}{red!70!black}{0.8pt}
-\BTKSetBoxDebugStyle{body}{black!70}{0.8pt}
-\BTKSetBoxDebugStyle{main}{black}{0.8pt}
-\BTKSetBoxDebugStyle{left}{teal!70!black}{0.8pt}
-\BTKSetBoxDebugStyle{right}{violet!70!black}{0.8pt}
-\BTKSetBoxDebugStyle{text}{green!60!black}{0.8pt}
-\BTKSetBoxDebugStyle{img}{orange!80!black}{0.8pt}
-\BTKSetBoxDebugStyle{title}{blue!70!black}{0.8pt}
-\BTKSetBoxDebugStyle{author}{black!70}{0.8pt}
-\BTKSetBoxDebugStyle{date}{black!70}{0.8pt}
-\BTKSetBoxDebugStyle{footer-left}{red!70!black}{0.7pt}
-\BTKSetBoxDebugStyle{footer-center}{red!70!black}{0.7pt}
-\BTKSetBoxDebugStyle{footer-right}{red!70!black}{0.7pt}
-
-\newcommand{\BTK@dbgstylefor}[1]{%
-  \def\BTK@dbgcol{\BTKDebugColorDefault}%
-  \def\BTK@dbglw{\BTKDebugLWDefault}%
-  \@ifundefined{BTK@box@#1@dbgcol}{}{%
-    \edef\BTK@dbgcol{\csname BTK@box@#1@dbgcol\endcsname}%
-  }%
-  \@ifundefined{BTK@box@#1@dbglw}{}{%
-    \edef\BTK@dbglw{\csname BTK@box@#1@dbglw\endcsname}%
-  }%
-}
-
-% ------------------------------------------------------------
-% Box registry (per frame)
-% ------------------------------------------------------------
-% etoolbox list storage (starts empty)
-\let\BTK@boxlist\@empty
-
-\newcommand{\BTK@boxlistclear}{%
-  \global\let\BTK@boxlist\@empty
-}
-
-% add unique (global)
-\newcommand{\BTK@boxadd}[1]{%
-  \ifinlist{#1}{\BTK@boxlist}{%
-    \PackageError{beamertoolkit}{Box `#1` is already defined for this frame}{}%
-  }{%
-    \listgadd\BTK@boxlist{#1}%
-  }%
-}
-
-% assert membership
-\newcommand{\BTK@boxassert}[1]{%
-  \ifinlist{#1}{\BTK@boxlist}{}{%
-    \PackageError{beamertoolkit}{Unknown box `#1`}{%
-      Box `#1` is not registered for this frame.\MessageBreak
-      Known boxes: \BTK@boxlist%
-    }%
-  }%
-}
-
-% Method to get the properties of a box.
-\newcommand{\BTKBoxProp}[2]{BTK@box@#1@#2} % box name, property
-
-% Set any box property (GLOBAL, LONG)
-\newcommand{\BTKSetBoxProp}[3]{%
-  \global\expandafter\long\expandafter\def\csname\BTKBoxProp{#1}{#2}\endcsname{#3}%
-}
-
-% Get any box property (expands to its value if defined, else \relax)
-\newcommand{\BTKGetBoxProp}[2]{%
-  \csname\BTKBoxProp{#1}{#2}\endcsname
-}
-
-% Current box group
-\let\BTK@curgroup\@empty
-\newcommand{\BTKSetCurrentBoxGroup}[1]{\gdef\BTK@curgroup{#1}}
-
-% Define a rectangle by NW and SE coords.
-% Must be called inside a tikzpicture.
-% Just creates coordinates; does not draw anything.
-\newcommand{\BTKDeclareBox}[3]{%  % box name, NW coord, SE coord
-  \BTK@boxadd{#1}%
-  \ifx\BTK@curgroup\@empty
-    \PackageError{beamertoolkit}{Cannot declare box `#1` without a current group}%
-      {Call \string\BTKSetCurrentBoxGroup\space before \string\BTKDeclareBox}%
-  \else
-    \BTKSetBoxProp{#1}{group}{\BTK@curgroup}%
-  \fi
-  \coordinate (\BTKBoxProp{#1}{nw}) at #2;%
-  \coordinate (\BTKBoxProp{#1}{se}) at #3;%
-  \coordinate (\BTKBoxProp{#1}{ne}) at (\BTKBoxProp{#1}{nw}) -| (\BTKBoxProp{#1}{se});%
-  \coordinate (\BTKBoxProp{#1}{sw}) at (\BTKBoxProp{#1}{nw}) |- (\BTKBoxProp{#1}{se});%
-  \coordinate (\BTKBoxProp{#1}{c})  at ($(\BTKBoxProp{#1}{nw})!0.5!(\BTKBoxProp{#1}{se})$);%
-  \coordinate (\BTKBoxProp{#1}{n})  at ($(\BTKBoxProp{#1}{nw})!0.5!(\BTKBoxProp{#1}{ne})$);%
-  \coordinate (\BTKBoxProp{#1}{s})  at ($(\BTKBoxProp{#1}{sw})!0.5!(\BTKBoxProp{#1}{se})$);%
-  \coordinate (\BTKBoxProp{#1}{e})  at ($(\BTKBoxProp{#1}{ne})!0.5!(\BTKBoxProp{#1}{se})$);%
-  \coordinate (\BTKBoxProp{#1}{w})  at ($(\BTKBoxProp{#1}{nw})!0.5!(\BTKBoxProp{#1}{sw})$);%
-}
-
-% Set the content of the box (GLOBAL)
-\newcommand{\BTKBox}[2]{%
-  \BTK@boxassert{#1}%
-  \BTKSetBoxProp{#1}{content}{#2}%
-}
-
-\newcommand{\BTKBoxShowProperties}[1]{%
-  \BTK@boxassert{#1}%
-  \def\BTK@showprop##1{%
-    \begingroup
-      \edef\BTK@pname{\BTKBoxProp{#1}{##1}}%
-      \ifcsname \BTK@pname\endcsname
-        \typeout{Box `#1` property `##1` is defined (\BTK@pname)}%
-      \else
-        \typeout{Box `#1` has no property `##1` (\BTK@pname)}%
-      \fi
-    \endgroup
-  }%
-  \BTK@showprop{dbgcol}%
-  \BTK@showprop{dbglw}%
-  \BTK@showprop{group}%
-  \edef\BTK@content{\BTKGetBoxProp{#1}{group}}%
-  \typeout{Group: \BTK@content}%
-  \BTK@showprop{content}%
-}
-
-% Remove variables associated with a box
-\newcommand{\BTK@boxremove}[1]{%
-  \BTKUndefIfDefined{BTK@box@#1@content}%
-  \BTKUndefIfDefined{BTK@box@#1@dbgcol}%
-  \BTKUndefIfDefined{BTK@box@#1@dbglw}%
-  \BTKUndefIfDefined{BTK@box@#1@group}%
-}
-
-% Helper methods to find a box's height and width for use in a minipage. Call inside tikzpicture.
-\newdimen\BTK@tmpW
-\newdimen\BTK@tmpH
-
-\newcommand{\BTK@calcBoxWH}[1]{%
-  \path let
-    \p1 = (\BTKBoxProp{#1}{nw}),
-    \p2 = (\BTKBoxProp{#1}{se})
-  in
-    \pgfextra{%
-      \global\BTK@tmpW=\dimexpr\x2-\x1\relax
-      \global\BTK@tmpH=\dimexpr\y1-\y2\relax
-    };%
-}
-
-% \BTKFilterBoxListByGroup{<in list>}{<group>}{<out macro>}
-%   <in list> is an etoolbox list (\do{a}\do{b}...)
-%   <out macro> becomes an etoolbox list too.
-\newcommand{\BTKFilterBoxListByGroup}[3]{%
-  \begingroup
-    \edef\BTK@want{#2}% freeze group string
-    \let\BTK@out\@empty
-    \def\BTK@one##1{%
-      \begingroup
-        \edef\BTK@pname{\BTKBoxProp{##1}{group}}%
-        \ifcsname\BTK@pname\endcsname
-          \edef\BTK@grp{\csname\BTK@pname\endcsname}%
-          \ifx\BTK@grp\BTK@want
-            \endgroup
-            \listadd\BTK@out{##1}%
-          \else
-            \endgroup
-          \fi
-        \else
-          \endgroup
-        \fi
-    }%
-    \forlistloop{\BTK@one}{#1}%
-    \global\let#3\BTK@out
-  \endgroup
-}
-
-\newcommand{\BTKBoxesInGroup}[2]{%
-  \BTKFilterBoxListByGroup{\BTK@boxlist}{#1}{#2}%
-}
-
-% Draw the box content (call inside BTKOverlay or any tikz overlay)
-\newcommand{\BTK@drawbox}[1]{%
-  \BTK@boxassert{#1}%
-  \@ifundefined{BTK@box@#1@content}{%
-    \PackageError{beamertoolkit}{Box `#1` has no content}{}%
-  }{%
-    \BTK@calcBoxWH{#1}%
-    % place content in a minipage of the right size using the NW and SE anchors
-    \node [anchor=north west,inner sep=0pt,outer sep=0pt] at (\BTKBoxProp{#1}{nw}) {%
-      \begin{minipage}[t][\BTK@tmpH][t]{\BTK@tmpW}%
-        \ignorespaces\BTKGetBoxProp{#1}{content}\unskip
-      \end{minipage}%
-    };%
-    % draw debug box if debug mode is on
-    \ifBTKDebug%
-      \BTK@dbgstylefor{#1}%
-      \typeout{BTK: Drawing debug box for `#1` with color \BTK@dbgcol\space and line width \BTK@dbglw}%
-      % white halo first (thicker)
-      \draw[draw=white,line width=\dimexpr\BTK@dbglw+1.5pt\relax]
-        (\BTKBoxProp{#1}{sw}) rectangle (\BTKBoxProp{#1}{ne});
-      \draw[draw=\BTK@dbgcol,line width=\BTK@dbglw]
-        (\BTKBoxProp{#1}{sw}) rectangle (\BTKBoxProp{#1}{ne});
-    \fi%
-  }%
-}
-
-% Public: draw all boxes in a group (call inside a tikzpicture/BTKOverlay)
-\newcommand{\BTKDrawBoxesInGroup}[1]{%
-  \BTKBoxesInGroup{#1}{\BTK@boxlistingroup}%
-  \forlistloop{\BTK@drawbox}{\BTK@boxlistingroup}%
-}
-
-% Clear all boxes for this frame
-\newcommand{\BTK@boxclear}{%
-  \forlistloop{\BTK@boxremove}{\BTK@boxlist}%
-  \BTK@boxlistclear
-}
-
-% -------------
-% Layouts
-% -------------
-
 
 % ----------------------------
 % Background registry and per-frame state
@@ -297,7 +102,6 @@
 \def\BTK@appendixbg{appendix}
 
 \newcommand{\BTKUseBackground}[1]{%
-  \typeout{Using background `#1`}%
   \let\BTK@bgmode\BTK@mode@image%
   \edef\BTK@bgname{#1}%
   \@ifundefined{BTK@bgfile@\BTK@bgname}{%
@@ -309,13 +113,11 @@
 }
 
 \newcommand{\BTKUseBackgroundColor}[1]{%
-  \typeout{Using background color `#1`}%
   \let\BTK@bgmode\BTK@mode@color%
   \def\BTK@bgcolor{#1}%
 }
 
 \newcommand{\BTKNoBackground}{%
-  \typeout{No background set}%
   \let\BTK@bgmode\BTK@mode@none%
   % optional, for sanity in logs:
   % \def\BTK@bgfile{}%
@@ -335,16 +137,12 @@
 \define@key{beamerframe}{bgnone}[true]{\BTKNoBackground}
 
 \newcommand{\BTK@drawbackground}{%
-  \typeout{Drawing background (mode=\BTK@bgmode, file=\BTK@bgfile, color=\BTK@bgcolor, opacity=\BTK@bgopacity)}%
   \ifx\BTK@bgmode\BTK@mode@none
-    \typeout{BTK: No background for this frame}%
     % nothing
   \else\ifx\BTK@bgmode\BTK@mode@color
-    \typeout{BTK: Drawing background color}%
     \fill[fill=\BTK@bgcolor,opacity=\BTK@bgopacity]
       (current page.south west) rectangle (current page.north east);%
   \else
-    \typeout{BTK: Drawing background image}%
     \node[inner sep=0pt,outer sep=0pt,opacity=\BTK@bgopacity] at (current page.center) {%
       \includegraphics[width=\paperwidth,keepaspectratio]{\BTK@bgfile}%
     };%
@@ -352,24 +150,19 @@
 }
 
 % ------------------------------------------------------------
-% Per-frame init/reset
+% Layout registry (pgfkeys-backed)
 % ------------------------------------------------------------
-\newif\ifBTK@inited
-\BTK@initedfalse
 
-\newcommand{\BTKFrameReset}{%
-  \global\BTK@initedfalse
-  % clear all boxes
-  \BTK@boxclear%
-  % Reset background to default for each frame (author can override per frame)
-  \BTKUseBackground{\BTK@defaultbg}%
-  \BTKSetBackgroundOpacity{1}%
+
+% Define a layout: stores code that will run when the key is executed
+\newcommand{\BTKDefineLayout}[2]{%
+  \pgfkeys{/btk/layout/#1/.code={#2}}%
 }
 
-%\AtBeginEnvironment{frame}{\BTKFrameReset}
-\BeforeBeginEnvironment{frame}{\BTKFrameReset}
-%\AfterEndEnvironment{frame}{\BTKFrameReset}  % I don't think this is needed? We reset at the beginning of the frame already?
-
+\newcommand{\BTKUseLayout}[1]{%
+  % execute; if unknown, /btk/layout/.unknown fires
+  \pgfkeys{/btk/layout/#1}%
+}
 
 % ------------------------------------------------------------
 % Overlay environment (power mode)
@@ -385,11 +178,48 @@
 % BTK beamer templates
 % ------------------------------------------------------------
 
+% Optional per-frame toggle:
+%\begin{frame}[btkoverlay=false] % <- disables btk overlay for this frame.
+%  ...
+%\end{frame}
+
+\newif\ifBTKAutoOverlay
+\BTKAutoOverlaytrue
+\define@key{beamerframe}{btkoverlay}[true]{\csname BTKAutoOverlay#1\endcsname}
+
 % Set the background template to draw the current background (which may be set per frame or by theme)
-\setbeamertemplate{background}{
-  \begin{BTKOverlay}%
-    \BTK@drawbackground%
-  \end{BTKOverlay}%
+\newcommand{\BTKInstallTemplates}{%
+  \setbeamertemplate{background}{
+    \begin{BTKOverlay}%
+      \BTK@drawbackground%
+    \end{BTKOverlay}%
+  }
+
+  % Theme-defined template; default empty
+  \setbeamertemplate{btk overlay}{}
+
+  % Wrapper that executes the template inside a single overlay tikzpicture
+  \newcommand{\BTKRenderOverlay}{%
+    \ifBTKAutoOverlay
+      \begin{BTKOverlay}%
+        \usebeamertemplate{btk overlay}%
+      \end{BTKOverlay}%
+    \fi
+  }
+
+  % Critical: run BEFORE \end{frame} finishes (still within the frame build)
+  \AtEndEnvironment{frame}{
+    \BTKRenderOverlay
+  }
 }
+
+% ------------------------------------------------------------
+% Beamer frame keys (bridge)
+% ------------------------------------------------------------
+% layout=<name> runs the layout code (template changes remain local to this frame)
+\define@key{beamerframe}{layout}{\BTKUseLayout{#1}}
+
+% btk={k=v,...} parses a PGF keylist into /btk/opt/<k>=<v>
+\define@key{beamerframe}{btk}{\pgfkeys{/btk/opt/.cd,#1}}
 
 \makeatother
