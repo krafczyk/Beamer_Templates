@@ -146,6 +146,57 @@
   \setbeamertemplate{framesubtitle}{}
 }
 
+\BTKDefineLayout{two-col}{
+  \setbeamertemplate{title page}{}
+  \setbeamertemplate{btk overlay}{
+    % Left text box
+    \coordinate (NCSA@l@nw) at ($(current page.north west)+(2pt,-1.07cm)$);
+    \coordinate (NCSA@l@se) at ($(current page.south)+(-2pt,1.0cm)$);
+    \BTKSetBoxPaddingFromBeamerFont{normal text}
+    \BTKRectMP[fill=none][c][t]{NCSA@l@nw}{NCSA@l@se}{%
+      \usebeamercolor[fg]{normal text}%
+      \usebeamerfont{normal text}%
+      \BTKGetContent{left}%
+    }
+    % Right text box
+    \coordinate (NCSA@l@nw) at ($(current page.north)+(2pt,-1.07cm)$);
+    \coordinate (NCSA@l@se) at ($(current page.south east)+(-2pt,1.0cm)$);
+    \BTKSetBoxPaddingFromBeamerFont{normal text}
+    \BTKRectMP[fill=none][c][t]{NCSA@l@nw}{NCSA@l@se}{%
+      \usebeamercolor[fg]{normal text}%
+      \usebeamerfont{normal text}%
+      \BTKGetContent{right}%
+    }
+  }
+  \setbeamertemplate{footline}{%
+    \begin{BTKOverlay}
+      % slide numbers box
+      \coordinate (NCSA@footnumber@nw) at ($(current page.south)+(-1cm,0.7cm)$);
+      \coordinate (NCSA@footnumber@se) at ($(current page.south)+(1cm,0cm)$);
+      \BTKRectMP[fill=none][c][c]{NCSA@footnumber@nw}{NCSA@footnumber@se}{%
+        \centering
+        \usebeamercolor[fg]{footline}\usebeamerfont{footline}\insertframenumber/\insertmainframenumber
+      }
+    \end{BTKOverlay}
+  }
+  \setbeamertemplate{frametitle}{%
+    \begin{BTKOverlay}
+      % Title box corners
+      \coordinate (b1) at ($(current page.north west)+(0cm,-4pt)$);
+      \coordinate (b2) at ($(current page.north east)+(0cm,-1cm)$);
+      \path[fill=ncsagrey] (b1) rectangle (b2);
+      \coordinate (NCSA@t@nw) at ($(current page.north west)+(3pt,-4pt)$);
+      \coordinate (NCSA@t@se) at ($(current page.north east)+(-3pt,-1cm)$);
+      \BTKRectMP[fill=none][c][c]{NCSA@t@nw}{NCSA@t@se}{%
+        \usebeamercolor[fg]{frametitle}%
+        \usebeamerfont{frametitle}%
+        \insertframetitle
+      }
+    \end{BTKOverlay}
+  }
+  \setbeamertemplate{framesubtitle}{}
+}
+
 % Title slide convenience wrapper (forces BTK frame keys)
 \newcommand{\TitleFrame}{%
   \begin{frame}[plain,noframenumbering,bg=title,layout=title]

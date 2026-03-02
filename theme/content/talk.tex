@@ -16,28 +16,28 @@
 
 \begin{frame}[layout=full]{Full layout with plain text}
   \BTKContent{text}{
-    This is some test text. We can see how it's formatted.
+    \lipsum[1-3]
   }
 \end{frame}
 
 
-% \begin{frame}[layout=two-col]{Two columns (left/right regions)}
-%   \begin{BTKRegion}{left}
-%     \textbf{Left}\\[0.5em]
-%     \begin{itemize}
-%       \item bullets
-%       \item more bullets
-%     \end{itemize}
-%   \end{BTKRegion}
+\begin{frame}[layout=two-col]{Two columns (left/right regions)}
+  \BTKContent{left}{
+    \textbf{Left}\\[0.5em]
+    \begin{itemize}
+      \item bullets
+      \item more bullets
+    \end{itemize}
+  }
 
-%   \begin{BTKRegion}{right}
-%     \textbf{Right}\\[0.5em]
-%     \begin{itemize}
-%       \item figures/tables fit well
-%       \item or equations
-%     \end{itemize}
-%   \end{BTKRegion}
-% \end{frame}
+  \BTKContent{right}{
+    \textbf{Right}\\[0.5em]
+    \begin{itemize}
+      \item figures/tables fit well
+      \item or equations
+    \end{itemize}
+  }
+\end{frame}
 
 % \begin{frame}[layout=img-right]{Text + image (img-right)}
 %   \begin{BTKRegion}{text}
