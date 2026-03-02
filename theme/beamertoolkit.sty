@@ -99,6 +99,32 @@
 }
 
 % ------------------------------------------------------------
+% Padding Helpers
+% ------------------------------------------------------------
+
+% Defaults used by BTKRectMP
+\newlength\BTKBoxPadX
+\newlength\BTKBoxPadY
+\newdimen\BTK@tmpW
+\newdimen\BTK@tmpH
+
+% Set padding based on a beamer font (e.g. normal text, frametitle, footline)
+\newcommand{\BTKSetBoxPaddingFromBeamerFont}[1]{%
+  \begingroup
+    \usebeamerfont{#1}%
+    % 1em in the current font:
+    \global\BTKBoxPadX=\fontdimen6\font\relax
+    % vertical padding as ~1/2 baseline skip:
+    \global\BTKBoxPadY=\dimexpr\baselineskip/2\relax
+    \typeout{BTK font = \meaning\font}%
+    \typeout{BTKSetBoxPaddingFromBeamerFont: #1 => padX=\the\BTKBoxPadX}%
+    \typeout{BTKSetBoxPaddingFromBeamerFont: #1 => padY=\the\BTKBoxPadY}%
+    %\global\BTKBoxPadY=\dimexpr\baselineskip/3\relax
+    %\global\BTKBoxPadY=\dimexpr 2\baselineskip/3\relax
+  \endgroup
+}
+
+% ------------------------------------------------------------
 % Draw Helpers
 % ------------------------------------------------------------
 % \BTKRectMP*[<tikz node opts>][<mp pos>][<mp inner-pos>]{<NW>}{<SE>}{<content>}
@@ -106,28 +132,39 @@
 % - node is placed at NW, sized by (SE.x-NW.x) and (NW.y-SE.y)
 % Star (*) disables clipping to the rectangle.
 % Warning, don't put ';' after these calls.
-\NewDocumentCommand{\BTKRectMP}{ s O{} O{c} O{c} m m +m }{%
+% Default: clip. Star (*) disables clipping.
+% \BTKRectMP*[<node opts>][<mp pos>][<mp inner-pos>][<xpad>][<ypad>]{NW}{SE}{content}
+\NewDocumentCommand{\BTKRectMP}{ s O{} O{c} O{c} O{\BTKBoxPadX} O{\BTKBoxPadY} m m +m }{%
   \begin{scope}%
-    \path let \p1=(#5), \p2=(#6) in
-      % Clip by default; star disables
+    \coordinate (BTK@nw) at (#7);%
+    \coordinate (BTK@se) at (#8);%
+
+    \IfBooleanF{#1}{\clip (BTK@nw) rectangle (BTK@se);}%
+
+    \path let \p1=(BTK@nw), \p2=(BTK@se) in
       \pgfextra{%
-        \IfBooleanF{#1}{%
-          \pgfinterruptpath
-            \clip (\p1) rectangle (\p2);
-          \endpgfinterruptpath
-        }%
-      }%
-      node[
-        anchor=north west,
-        inner sep=0pt, outer sep=0pt,
-        fill=none,
-        \BTKDrawOpt,
-        #2%
-      ] at (\p1) {%
-        \begin{minipage}[#3][\dimexpr\y1-\y2\relax][#4]{\dimexpr\x2-\x1\relax}%
-          #7%
-        \end{minipage}%
+        \global\BTK@tmpW=\dimexpr\x2-\x1-2\dimexpr#5\relax\relax
+        \global\BTK@tmpH=\dimexpr\y1-\y2-2\dimexpr#6\relax\relax
       };%
+
+    \ifBTKOutline
+      \path[btk/outline-outer] (BTK@nw) rectangle (BTK@se);%
+      \path[btk/outline-inner] ($(BTK@nw)+(#5,-#6)$) rectangle ($(BTK@se)+(-#5,#6)$);%
+    \fi
+
+    % DEBUG: show node-opts argument so you can catch mis-parsing
+    %\typeout{BTKRectMP node-opts=[#2] mp=[#3][#4]}%
+
+    \node[
+      anchor=north west,
+      inner sep=0pt, outer sep=0pt,
+      fill=none,
+      #2%
+    ] at ($(BTK@nw)+(#5,-#6)$) {%
+      \begin{minipage}[#3][\BTK@tmpH][#4]{\BTK@tmpW}%
+        #9%
+      \end{minipage}%
+    };%
   \end{scope}%
 }
 
@@ -138,7 +175,8 @@
 \BTKDebugfalse
 
 \tikzset{
-  btk/outline/.style   ={draw=black,line width=0.8pt},
+  btk/outline-outer/.style={draw=black,line width=0.8pt},
+  btk/outline-inner/.style={draw=black!60,dashed,line width=0.6pt},
   btk/nooutline/.style={draw=none},
 }
 
