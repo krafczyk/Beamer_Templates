@@ -112,8 +112,9 @@
 \newcommand{\BTKSetBoxPaddingFromBeamerFont}[1]{%
   \begingroup
     \usebeamerfont{#1}%
-    % 1em in the current font:
-    \global\BTKBoxPadX=\fontdimen6\font\relax
+    % measure 1em in the currently selected font:
+    \setbox0=\hbox{\hspace{0.8em}}%
+    \global\BTKBoxPadX=\wd0\relax
     % vertical padding as ~1/2 baseline skip:
     \global\BTKBoxPadY=\dimexpr\baselineskip/2\relax
     \typeout{BTK font = \meaning\font}%
