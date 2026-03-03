@@ -110,16 +110,16 @@
 
 % Set padding based on a beamer font (e.g. normal text, frametitle, footline)
 \newcommand{\BTKSetBoxPaddingFromBeamerFont}[1]{%
-  \begingroup
-    \usebeamerfont{#1}%
-    % measure 1em in the currently selected font:
-    \setbox0=\hbox{\hspace{0.8em}}%
-    \global\BTKBoxPadX=\wd0\relax
-    % vertical padding as ~1/2 baseline skip:
-    \global\BTKBoxPadY=\dimexpr\baselineskip/2\relax
-    %\global\BTKBoxPadY=\dimexpr\baselineskip/3\relax
-    %\global\BTKBoxPadY=\dimexpr 2\baselineskip/3\relax
-  \endgroup
+  \usebeamerfont{#1}%
+  % measure 1em in the currently selected font:
+  \setbox0=\hbox{\hspace{0.8em}}%
+  \setlength{\BTKBoxPadX}{\wd0}%
+  %\global\BTKBoxPadX=\wd0\relax
+  % vertical padding as ~1/2 baseline skip:
+  \setlength{\BTKBoxPadY}{\dimexpr\baselineskip/2\relax}%
+  %\global\BTKBoxPadY=\dimexpr\baselineskip/2\relax
+  %\global\BTKBoxPadY=\dimexpr\baselineskip/3\relax
+  %\global\BTKBoxPadY=\dimexpr 2\baselineskip/3\relax
 }
 
 % ------------------------------------------------------------
