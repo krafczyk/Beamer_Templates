@@ -13,50 +13,44 @@
 \BTKAppendGraphicPath{theme/assets/}
 
 % Colors
-\definecolor{ncsablue}{RGB}{0,81,174}
-\definecolor{ncsagrey}{RGB}{102,102,102}
-
-% Geometry knobs owned by theme
-\newlength{\NCSAHeaderH}
-\newlength{\NCSAFooterH}
-\newlength{\NCSAGutter}
-\newlength{\NCSAImgW}
-\setlength{\NCSAHeaderH}{1.05cm}
-\setlength{\NCSAFooterH}{0.75cm}
-\setlength{\NCSAGutter}{0.9cm}
-\setlength{\NCSAImgW}{0.36\paperwidth}
+\definecolor{ncsablue}{RGB}{19,31,51}
+\definecolor{illiniorange}{RGB}{240,85,55}
 
 % Backgrounds
-\BTKDeclareBackground{default}{theme/assets/ncsa_generic_slide_background.jpg}
-\BTKDeclareBackground{title}{theme/assets/ncsa_title_background.jpg}
-\BTKDeclareBackground{appendix}{theme/assets/ncsa_title_background.jpg}
-\BTKUseBackground{default} % theme default (author can override per frame)
+\BTKDeclareBackground{titleBio}{theme/assets/Title_Bio.jpg}
+\BTKDeclareBackground{titleNCSA}{theme/assets/Title_NCSA_Building.jpg}
+\BTKDeclareBackground{titleTechA}{theme/assets/Title_Tech_1.jpg}
+\BTKDeclareBackground{titleTechB}{theme/assets/Title_Tech_2.jpg}
+\BTKDeclareBackground{titleViz}{theme/assets/Title_Viz.jpg}
+\BTKDeclareBackground{contentA}{theme/assets/Content_1.jpg}
+\BTKDeclareBackground{contentB}{theme/assets/Content_2.jpg}
+\BTKUseBackground{contentA} % theme default (author can override per frame)
 
 % Fonts/colors
 %\setsansfont{Arial}
 %\setmainfont{Arial}
-\setsansfont{Liberation Sans}
-\setmainfont{Liberation Sans}
+\setsansfont{Montserrat}
+\setmainfont{Montserrat}
 \setmonofont{Ubuntu Mono}
 \setbeamercolor*{title page header}{fg=white}
 \setbeamerfont*{title page header}{family=\sffamily,series=\bfseries,size=\Huge}
 
-\setbeamercolor*{frametitle}{fg=white}
+\setbeamercolor*{frametitle}{fg=ncsablue}
 \setbeamerfont*{frametitle}{family=\sffamily,series=\bfseries,size=\fontsize{16}{20}\selectfont}
-\setbeamercolor*{framesubtitle}{fg=white}
+\setbeamercolor*{framesubtitle}{fg=ncsablue}
 \setbeamerfont*{framesubtitle}{family=\sffamily,series=\bfseries,size=\normalsize}
 
 \setbeamercolor*{footline}{fg=white}
 \setbeamerfont*{footline}{family=\sffamily,size=\large}
 
-\setbeamercolor*{author}{fg=ncsagrey}
-\setbeamercolor*{date}{fg=ncsagrey}
-\setbeamercolor*{normal text}{fg=ncsagrey}
+\setbeamercolor*{author}{fg=white}
+\setbeamercolor*{date}{fg=white}
+\setbeamercolor*{normal text}{fg=ncsablue}
 \setbeamerfont*{normal text}{family=\sffamily,size=\fontsize{12}{14}\selectfont}
 \setbeamertemplate{itemize item}{\raise0.2ex\hbox{\normalsize$\bullet$}}
 \setbeamertemplate{itemize subitem}{\raise0.2ex\hbox{\tiny$\bullet$}}
-\setbeamercolor*{itemize item}{fg=ncsagrey}
-\setbeamercolor*{itemize subitem}{fg=ncsagrey}
+\setbeamercolor*{itemize item}{fg=ncsablue}
+\setbeamercolor*{itemize subitem}{fg=ncsablue}
 \setbeamertemplate{section in toc}{%
   \leavevmode\usebeamercolor[fg]{section in toc}%
   \hbox{$\vcenter{\hbox{\normalsize$\bullet$}}$}\hspace{0.6em}%
@@ -79,9 +73,9 @@
   \hbox{$\vcenter{\hbox{\tiny$\bullet$}}$}\hspace{0.5em}%
   \inserttocsubsection\par
 }
-\setbeamercolor{section in toc shaded}{fg=ncsagrey!50}
-\setbeamercolor{subsection in toc shaded}{fg=ncsagrey!30}
-\setbeamercolor{section in toc}{fg=ncsagrey}
+\setbeamercolor{section in toc shaded}{fg=ncsablue!50}
+\setbeamercolor{subsection in toc shaded}{fg=ncsablue!30}
+\setbeamercolor{section in toc}{fg=ncsablue}
 
 \setbeamertemplate{navigation symbols}{}
 
@@ -90,35 +84,37 @@
 
 % runs BEFORE beamer parses [key=val,...] for the frame
 \BeforeBeginEnvironment{frame}{%
-  \BTKUseBackground{default}%
+  \BTKUseBackground{contentA}%
   \BTKSetBackgroundOpacity{1}%
   % reset any per-frame BTK state here too
 }
 
 \BTKDefineLayout{title}{
-  \BTKUseBackground{title}%
   \setbeamertemplate{title page}{
     \begin{BTKOverlay}
       % Title box corners
-      \coordinate (NCSA@t@nw) at ($(current page.north west)+(0.3pt,-0.4cm)$);
-      \coordinate (NCSA@t@se) at ($(current page.north east)+(-0.3pt,-5.7cm)$);
-      \BTKRectMP[][c][c]{NCSA@t@nw}{NCSA@t@se}{%
-        \centering
+      \coordinate (NCSA@t@nw) at ($(current page.north)+(0pt,-1.5cm)$);
+      \coordinate (NCSA@t@se) at ($(NCSA@t@nw)+(7cm,-3.1cm)$);
+      \BTKRectMP[][t][c]{NCSA@t@nw}{NCSA@t@se}{%
         \usebeamercolor[fg]{title page header}%
         \usebeamerfont{title page header}%
         \inserttitle
       }
       % Author/date near bottom
-      \coordinate (NCSA@a@nw) at ($(current page.south west)+(0.1cm,3.05cm)$);
-      \coordinate (NCSA@a@se) at ($(current page.south west)+(12cm,2.00cm)$);
-      \BTKRectMP[][c][c]{NCSA@a@nw}{NCSA@a@se}{%
-        \usebeamerfont{author}\insertauthor
+      \coordinate (NCSA@a@nw) at ($(current page.north)+(0cm,-4.6cm)$);
+      \coordinate (NCSA@a@se) at ($(NCSA@a@nw)+(7cm, -1cm)$);
+      \BTKRectMP[][c][t]{NCSA@a@nw}{NCSA@a@se}{%
+        \usebeamercolor[fg]{author}%
+        \usebeamerfont{author}%
+        \insertauthor
       }
-      \coordinate (NCSA@d@nw) at ($(current page.south east)+(-4cm,3.05cm)$);
-      \coordinate (NCSA@d@se) at ($(current page.south east)+(-0.1cm,2.00cm)$);
+      \coordinate (NCSA@d@se) at ($(current page.south east)+(-0.5cm,0.5cm)$);
+      \coordinate (NCSA@d@nw) at ($(NCSA@d@se)+(-4cm,1cm)$);
       \BTKRectMP[][c][c]{NCSA@d@nw}{NCSA@d@se}{%
         \raggedleft
-        \usebeamerfont{date}\insertdate
+        \usebeamercolor[fg]{date}%
+        \usebeamerfont{date}%
+        \insertdate
       }
     \end{BTKOverlay}
   }
@@ -241,7 +237,7 @@
 
 % Title slide convenience wrapper (forces BTK frame keys)
 \newcommand{\TitleFrame}{%
-  \begin{frame}[plain,noframenumbering,bg=title,layout=title]
+  \begin{frame}[plain,noframenumbering,bg=titleTechA,layout=title]
     \titlepage
   \end{frame}
 }
@@ -297,7 +293,7 @@
 
 \AtBeginSection[]{
   \ifBTKSectionSlides
-    \begin{frame}[plain,noframenumbering,layout=section-slide,bg=default]
+    \begin{frame}[plain,noframenumbering,layout=section-slide,bg=contentA]
       \BTKContent{section-title}{\insertsectionhead}
       \BTKContent{section-body}{\tableofcontents[currentsection,hideothersubsections]}
     \end{frame}
@@ -306,7 +302,7 @@
 
 \AtBeginSubsection[]{
   \ifBTKSubsectionSlides
-    \begin{frame}[plain,noframenumbering,layout=section-slide,bg=default]
+    \begin{frame}[plain,noframenumbering,layout=section-slide,bg=contentA]
       \BTKContent{section-title}{\insertsubsectionhead}
       \BTKContent{section-body}{}
     \end{frame}
