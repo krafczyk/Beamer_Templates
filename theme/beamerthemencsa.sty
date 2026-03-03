@@ -57,6 +57,31 @@
 \setbeamertemplate{itemize subitem}{\raise0.2ex\hbox{\tiny$\bullet$}}
 \setbeamercolor*{itemize item}{fg=ncsagrey}
 \setbeamercolor*{itemize subitem}{fg=ncsagrey}
+\setbeamertemplate{section in toc}{%
+  \leavevmode\usebeamercolor[fg]{section in toc}%
+  \hbox{$\vcenter{\hbox{\normalsize$\bullet$}}$}\hspace{0.6em}%
+  \inserttocsection\par
+}
+\setbeamertemplate{subsection in toc}{%
+  \leavevmode\usebeamercolor[fg]{subsection in toc}%
+  \hspace{1.5em}%
+  \hbox{$\vcenter{\hbox{\tiny$\bullet$}}$}\hspace{0.5em}%
+  \inserttocsubsection\par
+}
+\setbeamertemplate{section in toc shaded}{%
+  \leavevmode\usebeamercolor[fg]{section in toc shaded}%
+  \hbox{$\vcenter{\hbox{\normalsize$\bullet$}}$}\hspace{0.6em}%
+  \inserttocsection\par
+}
+\setbeamertemplate{subsection in toc shaded}{%
+  \leavevmode\usebeamercolor[fg]{subsection in toc shaded}%
+  \hspace{1.5em}%
+  \hbox{$\vcenter{\hbox{\tiny$\bullet$}}$}\hspace{0.5em}%
+  \inserttocsubsection\par
+}
+\setbeamercolor{section in toc shaded}{fg=ncsagrey!50}
+\setbeamercolor{subsection in toc shaded}{fg=ncsagrey!30}
+\setbeamercolor{section in toc}{fg=ncsagrey}
 
 \setbeamertemplate{navigation symbols}{}
 
@@ -102,8 +127,7 @@
   \setbeamertemplate{btk overlay}{}
 }
 
-\newcommand{\NCSA@frame}{%
-  \setbeamertemplate{title page}{}
+\newcommand{\NCSA@footframe}{%
   \setbeamertemplate{footline}{%
     \begin{BTKOverlay}
       % slide numbers box
@@ -115,15 +139,26 @@
       }
     \end{BTKOverlay}
   }
+}
+
+\newcommand{\NCSA@topbar}[1]{%
+  % Title box corners
+  \coordinate (b1) at ($(current page.north west)+(0cm,-4pt)$);
+  \coordinate (b2) at ($(current page.north east)+(0cm,-1cm)$);
+  \path[fill=ncsagrey] (b1) rectangle (b2);
+  \coordinate (NCSA@t@nw) at ($(current page.north west)+(3pt,-4pt)$);
+  \coordinate (NCSA@t@se) at ($(current page.north east)+(-3pt,-1cm)$);
+  \BTKRectMP[fill=none][c][c]{NCSA@t@nw}{NCSA@t@se}{%
+    #1
+  }
+}
+
+\newcommand{\NCSA@frame}{%
+  \setbeamertemplate{title page}{}
+  \NCSA@footframe
   \setbeamertemplate{frametitle}{%
     \begin{BTKOverlay}
-      % Title box corners
-      \coordinate (b1) at ($(current page.north west)+(0cm,-4pt)$);
-      \coordinate (b2) at ($(current page.north east)+(0cm,-1cm)$);
-      \path[fill=ncsagrey] (b1) rectangle (b2);
-      \coordinate (NCSA@t@nw) at ($(current page.north west)+(3pt,-4pt)$);
-      \coordinate (NCSA@t@se) at ($(current page.north east)+(-3pt,-1cm)$);
-      \BTKRectMP[fill=none][c][c]{NCSA@t@nw}{NCSA@t@se}{%
+      \NCSA@topbar{
         \usebeamercolor[fg]{frametitle}%
         \usebeamerfont{frametitle}%
         \insertframetitle
@@ -211,13 +246,78 @@
   \end{frame}
 }
 
-% \newcommand{\AppendixAnnounce}[1]{%
-%   \BTKAppendixBegin
-%   \begin{frame}[plain,noframenumbering,layout=full,bg=appendix]
-%     \begin{BTKRegion}{main}
-%       \centering\vfill{\LARGE #1}\vfill
-%     \end{BTKRegion}
-%   \end{frame}
-% }
+% Toggle section/subsection slides
+\newif\ifBTKSectionSlides
+\BTKSectionSlidestrue
+\newif\ifBTKSubsectionSlides
+\BTKSubsectionSlidesfalse  % default off (usually noisy)
+
+% A clean “section slide” layout (no header/footer)
+\BTKDefineLayout{section-slide}{
+  \setbeamertemplate{title page}{}
+  \NCSA@footframe
+  \setbeamertemplate{frametitle}{}
+  \setbeamertemplate{framesubtitle}{}
+  \setbeamertemplate{btk overlay}{
+    \NCSA@topbar{
+      \usebeamercolor[fg]{frametitle}%
+      \usebeamerfont{frametitle}%
+      \BTKGetContent{section-title}
+    }
+    % Main text box
+    \coordinate (NCSA@t1@nw) at ($(current page.north west)+(2pt,-1.07cm)$);
+    \coordinate (NCSA@t1@se) at ($(current page.south east)+(-2pt,1.0cm)$);
+    \BTKSetBoxPaddingFromBeamerFont{normal text}
+    \BTKRectMP[fill=none][c][t]{NCSA@t1@nw}{NCSA@t1@se}{%
+      \usebeamercolor[fg]{normal text}%
+      \usebeamerfont{normal text}%
+      \BTKGetContent{section-body}
+    }
+  }
+}
+
+% Appendix announce layout (no header/footer, appendix background)
+\BTKDefineLayout{appendix-announce}{
+  \BTKUseBackground{appendix}%
+  \setbeamertemplate{title page}{}%
+  \setbeamertemplate{footline}{}%
+  \setbeamertemplate{frametitle}{}%
+  \setbeamertemplate{btk overlay}{%
+    % Title box corners
+    \coordinate (NCSA@t@nw) at ($(current page.north west)+(0.3pt,-0.4cm)$);
+    \coordinate (NCSA@t@se) at ($(current page.north east)+(-0.3pt,-5.7cm)$);
+    \BTKRectMP[][c][c]{NCSA@t@nw}{NCSA@t@se}{%
+      \centering
+      \usebeamercolor[fg]{title page header}%
+      \usebeamerfont{title page header}%
+      \BTKGetContent{appendix-title}
+    }
+  }%
+}
+
+\AtBeginSection[]{
+  \ifBTKSectionSlides
+    \begin{frame}[plain,noframenumbering,layout=section-slide,bg=default]
+      \BTKContent{section-title}{\insertsectionhead}
+      \BTKContent{section-body}{\tableofcontents[currentsection,hideothersubsections]}
+    \end{frame}
+  \fi
+}
+
+\AtBeginSubsection[]{
+  \ifBTKSubsectionSlides
+    \begin{frame}[plain,noframenumbering,layout=section-slide,bg=default]
+      \BTKContent{section-title}{\insertsubsectionhead}
+      \BTKContent{section-body}{}
+    \end{frame}
+  \fi
+}
+
+\newcommand{\AppendixAnnounce}[1]{%
+  \BTKAppendixBegin
+  \begin{frame}[plain,noframenumbering,layout=appendix-announce]
+    \BTKContent{appendix-title}{#1}
+  \end{frame}
+}
 
 \mode<all>

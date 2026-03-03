@@ -30,10 +30,6 @@
   }%
 }
 
-\newcommand{\BTKFrameCounter}{%
-  \insertframenumber/\insertmainframenumber%
-}
-
 % ------------------------------------------------------------
 % PGF Store/Retrieve API
 % ------------------------------------------------------------
@@ -73,11 +69,6 @@
 }
 
 % Getters (return empty if not defined)
-% \newcommand{\BTKGetContent}[1]{%
-%   \pgfkeysifdefined{/btk/content/#1/.@cmd}{%
-%     \pgfkeys{/btk/content/#1}%
-%   }{}%
-% }
 \newcommand{\BTKGetContent}[1]{%
   % execute; if unknown, /btk/content/.unknown fires
   \pgfkeys{/btk/content/#1}%
@@ -331,5 +322,49 @@
 
 % btk={k=v,...} parses a PGF keylist into /btk/opt/<k>=<v>
 \define@key{beamerframe}{btk}{\pgfkeys{/btk/opt/.cd,#1}}
+
+% ------------------------------------------------------------
+% Main slide total (freeze at appendix)
+% ------------------------------------------------------------
+\def\BTKMainTotal{0}
+\newif\ifBTK@wroteMainTotal
+\BTK@wroteMainTotalfalse
+
+\newcommand{\BTK@writeMainTotalToAux}[1]{%
+  \begingroup
+    \immediate\write\@auxout{%
+      \noexpand\gdef\noexpand\BTKMainTotal{#1}%
+    }%
+  \endgroup
+  \global\BTK@wroteMainTotaltrue
+}
+
+% Call this instead of \appendix
+\newcommand{\BTKAppendixBegin}{%
+  \ifBTK@wroteMainTotal\else
+    \BTK@writeMainTotalToAux{\number\value{framenumber}}%
+  \fi
+  \appendix
+}
+
+% If no appendix call happened, main total == final total (next run)
+\AtEndDocument{%
+  \ifBTK@wroteMainTotal\else
+    \BTK@writeMainTotalToAux{\number\value{framenumber}}%
+  \fi
+}
+
+% Denominator for frame counter: main total if known, else total frames
+\providecommand{\insertmainframenumber}{%
+  \ifnum\BTKMainTotal>0\relax
+    \BTKMainTotal
+  \else
+    \inserttotalframenumber
+  \fi
+}
+
+\newcommand{\BTKFrameCounter}{%
+  \insertframenumber/\insertmainframenumber%
+}
 
 \makeatother
