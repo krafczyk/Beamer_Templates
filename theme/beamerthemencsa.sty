@@ -146,7 +146,6 @@
       \usebeamerfont{normal text}%
       \BTKGetContent{text}%
     }
-    %\BTKResetBoxPadding
   }
 }
 
@@ -170,28 +169,38 @@
       \usebeamerfont{normal text}%
       \BTKGetContent{right}%
     }
-    %\BTKResetBoxPadding
   }
 }
 
 \BTKDefineLayout{img-right}{
   \NCSA@frame
   \setbeamertemplate{btk overlay}{
-    % Main text box
     \coordinate (NCSA@t1@nw) at ($(current page.north west)+(2pt,-1.07cm)$);
     \coordinate (NCSA@t1@se) at ($(current page.south east)+(-2pt,1.0cm)$);
+
     \BTKSetBoxPaddingFromBeamerFont{normal text}
+
+    % defaults if author didn't set them
+    \def\BTK@imgw{\BTKGetOptionOr{img-width}{0.34\linewidth}}
+    \def\BTK@imgside{\BTKGetOptionOr{img-side}{r}}
+    \def\BTK@imgvspace{\BTKGetOptionOr{img-vspace}{-0.5\baselineskip}}
+    \def\BTK@imggap{\BTKGetOptionOr{img-gap}{0.6em}}
+
     \BTKRectMP[fill=none][c][t]{NCSA@t1@nw}{NCSA@t1@se}{%
       \usebeamercolor[fg]{normal text}%
       \usebeamerfont{normal text}%
-      \begin{wrapfigure}{r}{\BTKGetContent{img-width}}
-        %\vspace{-\baselineskip} % tweak; often needed in beamer
+
+      % wrapfig uses \columnsep for the text-image gap
+      \setlength{\columnsep}{\BTK@imggap}%
+
+      \begin{wrapfigure}{\BTK@imgside}{\BTK@imgw}
+        \vspace{\BTK@imgvspace}%
         \centering
-        \BTKGetContent{img}
+        \BTKGetContent{img}%
       \end{wrapfigure}
-      \BTKGetContent{text}
+
+      \BTKGetContent{text}%
     }
-    %\BTKResetBoxPadding
   }
 }
 

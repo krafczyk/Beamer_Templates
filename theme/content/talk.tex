@@ -39,15 +39,13 @@
   }
 \end{frame}
 
-\begin{frame}[layout=full]{Text + image (img-right)}
-  \BTKContent{text}{
-    \begin{wrapfigure}{r}{0.34\linewidth}
-    \vspace{-\baselineskip} % tweak; often needed in beamer
-    \centering
+\begin{frame}[layout=img-right]{Text + image (img-right)}
+  \BTKOption{img-width}{0.4\linewidth}
+  \BTKContent{img}{
     \includegraphics[width=0.34\linewidth]{example_detail.png}
     \caption{This is a test caption}
-    \end{wrapfigure}
-
+  }
+  \BTKContent{text}{
     \textbf{Detector stack}\\[0.5em]
     \begin{itemize}
       \item Silicon tracker: measures charged-particle tracks (curvature $\rightarrow p_T$)
