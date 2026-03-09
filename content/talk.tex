@@ -2,7 +2,7 @@
 
 \section{Layouts + slots}
 
-\begin{frame}[layout=full]{Full layout (main region)}
+\begin{frame}[layout=fullA]{Full layout (main region)}
   \BTKContent{text}{
     \begin{itemize}
       \item This slide uses \texttt{layout=full} and fills the \texttt{text} textbox.
@@ -15,19 +15,19 @@
   }
 
   \begin{BTKOverlay}
-    % “power move” example: draw a box around the body
-    \draw[color=black,fill=red] ($(current page.west)+(1cm,0)$) rectangle ($(current page.south east)+(-1cm,1cm)$);
+    % “power move” example: draw a box, use coordinates already defined!
+    \draw[color=black,fill=red] ($(NCSA@t1@nw |- NCSA@t1@se)+(1cm,3cm)$) rectangle ($(NCSA@t1@se)+(-1cm,0.5cm)$);
   \end{BTKOverlay}
 \end{frame}
 
-\begin{frame}[layout=full]{Full layout with plain text}
+\begin{frame}[layout=fullA]{Full layout with plain text}
   \BTKContent{text}{
     \lipsum[1-3]
   }
 \end{frame}
 
 
-\begin{frame}[layout=two-col]{Two columns (left/right regions)}
+\begin{frame}[layout=two-colA]{Two columns (left/right regions)}
   \BTKContent{left}{
     \textbf{Left}\\[0.5em]
     \begin{itemize}
@@ -45,7 +45,7 @@
   }
 \end{frame}
 
-\begin{frame}[layout=img-right]{Text + image (img-right)}
+\begin{frame}[layout=img-rightA]{Text + image (img-right)}
   \BTKOption{img-width}{0.4\linewidth}
   \BTKContent{img}{
     \includegraphics[width=0.38\linewidth]{example_detail.png}
@@ -60,7 +60,7 @@
   }
 \end{frame}
 
-\begin{frame}[layout=img-right,bgopacity=0.35]{Custom per-frame opacity}
+\begin{frame}[layout=img-rightA,bgopacity=0.35]{Custom per-frame opacity}
   \BTKOption{img-width}{0.4\linewidth}
   \BTKContent{img}{
     \includegraphics[width=0.38\linewidth]{example_detail.png}
@@ -88,7 +88,7 @@
 
 \section{Conclusion}
 
-\begin{frame}[layout=full]{Summary}
+\begin{frame}[layout=fullA]{Summary}
   \BTKContent{text}{
     \begin{itemize}
       \item Layouts define named regions.

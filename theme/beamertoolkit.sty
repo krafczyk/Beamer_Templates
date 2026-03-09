@@ -245,15 +245,26 @@
 % ------------------------------------------------------------
 % Layout registry (pgfkeys-backed)
 % ------------------------------------------------------------
-
-
-% Define a layout: stores code that will run when the key is executed
-\NewDocumentCommand{\BTKDefineLayout}{m +m}{%
-  \pgfkeys{/btk/layout/#1/.code={#2}}%
+% Usage:
+%   \BTKDefineLayout{fullA}{ ... }                % no layout-default bg
+%   \BTKDefineLayout[contentA]{fullA}{ ... }      % layout-default bg = contentA
+%
+\NewDocumentCommand{\BTKDefineLayout}{O{} m +m}{%
+  % Store the executable layout code
+  \pgfkeys{/btk/layout/#2/.code={#3}}%
+  % Store optional per-layout default background
+  \pgfkeys{/btk/layout/#2/bg/.initial={#1}}%
 }
 
 \newcommand{\BTKUseLayout}[1]{%
-  % execute; if unknown, /btk/layout/.unknown fires
+  % If /btk/layout/<name>/bg exists and is nonempty, apply it first
+  \pgfkeysifdefined{/btk/layout/#1/bg}{%
+    \edef\BTK@layoutbg{\pgfkeysvalueof{/btk/layout/#1/bg}}%
+    \ifx\BTK@layoutbg\@empty\else
+      \BTKUseBackground{\BTK@layoutbg}%
+    \fi
+  }{}%
+  % Then execute the layout itself; if unknown, /btk/layout/.unknown fires
   \pgfkeys{/btk/layout/#1}%
 }
 

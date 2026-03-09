@@ -79,6 +79,21 @@
 
 \setbeamertemplate{navigation symbols}{}
 
+% Set theme wide lengths
+\newlength{\NCSA@A@padA}
+\newlength{\NCSA@A@padB}
+\newlength{\NCSA@A@padC}
+\newlength{\NCSA@title@height}
+\newlength{\NCSA@titleA@length}
+\newlength{\NCSA@fullbox@height}
+
+\setlength{\NCSA@A@padA}{0.5cm} % Horizontal Pad - left and right horizontal
+\setlength{\NCSA@A@padB}{\dimexpr\NCSA@A@padA/2\relax} % vertical pad, upper vertical
+\setlength{\NCSA@A@padC}{0.1cm} % Inter component separator
+\setlength{\NCSA@title@height}{0.8cm}
+\setlength{\NCSA@titleA@length}{\dimexpr\paperwidth-2\NCSA@A@padA\relax}
+\setlength{\NCSA@fullbox@height}{6.5cm}
+
 % Install base BTK templates required.
 \BTKInstallTemplates
 
@@ -123,12 +138,12 @@
   \setbeamertemplate{btk overlay}{}
 }
 
-\newcommand{\NCSA@footframe}{%
+\newcommand{\NCSA@footframeA}{%
   \setbeamertemplate{footline}{%
     \begin{BTKOverlay}
       % slide numbers box
-      \coordinate (NCSA@footnumber@nw) at ($(current page.south)+(-1cm,0.7cm)$);
-      \coordinate (NCSA@footnumber@se) at ($(current page.south)+(1cm,0cm)$);
+      \coordinate (NCSA@footnumber@se) at ($(current page.south east)+(0cm,0.15cm)$);
+      \coordinate (NCSA@footnumber@nw) at ($(NCSA@footnumber@se)+(-2cm,0.7cm)$);
       \BTKRectMP[fill=none][c][c]{NCSA@footnumber@nw}{NCSA@footnumber@se}{%
         \centering
         \usebeamercolor[fg]{footline}\usebeamerfont{footline}\insertframenumber/\insertmainframenumber
@@ -137,24 +152,20 @@
   }
 }
 
-\newcommand{\NCSA@topbar}[1]{%
-  % Title box corners
-  \coordinate (b1) at ($(current page.north west)+(0cm,-4pt)$);
-  \coordinate (b2) at ($(current page.north east)+(0cm,-1cm)$);
-  \path[fill=ncsagrey] (b1) rectangle (b2);
-  \coordinate (NCSA@t@nw) at ($(current page.north west)+(3pt,-4pt)$);
-  \coordinate (NCSA@t@se) at ($(current page.north east)+(-3pt,-1cm)$);
+\newcommand{\NCSA@topbarA}[1]{%
+  \coordinate (NCSA@t@nw) at ($(current page.north west)+(\NCSA@A@padA,-\NCSA@A@padB)$);
+  \coordinate (NCSA@t@se) at ($(NCSA@t@nw)+(\NCSA@titleA@length,-\NCSA@title@height)$);
   \BTKRectMP[fill=none][c][c]{NCSA@t@nw}{NCSA@t@se}{%
     #1
   }
 }
 
-\newcommand{\NCSA@frame}{%
+\newcommand{\NCSA@frameA}{%
   \setbeamertemplate{title page}{}
-  \NCSA@footframe
+  \NCSA@footframeA
   \setbeamertemplate{frametitle}{%
     \begin{BTKOverlay}
-      \NCSA@topbar{
+      \NCSA@topbarA{
         \usebeamercolor[fg]{frametitle}%
         \usebeamerfont{frametitle}%
         \insertframetitle
@@ -164,13 +175,12 @@
   \setbeamertemplate{framesubtitle}{}
 }
 
-\BTKDefineLayout{full}{
-  \NCSA@frame
+\BTKDefineLayout[contentA]{fullA}{
+  \NCSA@frameA
   \setbeamertemplate{btk overlay}{
     % Main text box
-    \coordinate (NCSA@t1@nw) at ($(current page.north west)+(2pt,-1.07cm)$);
-    \coordinate (NCSA@t1@se) at ($(current page.south east)+(-2pt,1.0cm)$);
-    %\coordinate (NCSA@t1@se) at ($(current page.south east)+(-2pt,0.7cm)$);
+    \coordinate (NCSA@t1@nw) at ($(NCSA@t@nw |- NCSA@t@se)+(0pt,-\NCSA@A@padC)$);
+    \coordinate (NCSA@t1@se) at ($(NCSA@t1@nw)+(\NCSA@titleA@length,-\NCSA@fullbox@height)$);
     \BTKSetBoxPaddingFromBeamerFont{normal text}
     \BTKRectMP[fill=none][c][t]{NCSA@t1@nw}{NCSA@t1@se}{%
       \usebeamercolor[fg]{normal text}%
@@ -180,12 +190,17 @@
   }
 }
 
-\BTKDefineLayout{two-col}{
-  \NCSA@frame
+\BTKDefineLayout[contentA]{two-colA}{
+  \NCSA@frameA
   \setbeamertemplate{btk overlay}{
+    \coordinate (NCSA@T@nw) at ($(NCSA@t@nw |- NCSA@t@se)+(0cm,-\NCSA@A@padC)$);
+    \coordinate (NCSA@T@ne) at ($(NCSA@t@se)+(0cm,-\NCSA@A@padC)$);
+    \coordinate (NCSA@T@mid) at ($(NCSA@T@nw)!0.5!(NCSA@T@ne)$);
+
     % Left text box
-    \coordinate (NCSA@l@nw) at ($(current page.north west)+(2pt,-1.07cm)$);
-    \coordinate (NCSA@l@se) at ($(current page.south)+(-2pt,1.0cm)$);
+    \coordinate (NCSA@l@nw) at (NCSA@T@nw);
+    \coordinate (NCSA@l@se) at ($(NCSA@T@mid)+(-\dimexpr\NCSA@A@padC/2\relax,-\NCSA@fullbox@height)$);
+
     \BTKSetBoxPaddingFromBeamerFont{normal text}
     \BTKRectMP[fill=none][c][t]{NCSA@l@nw}{NCSA@l@se}{%
       \usebeamercolor[fg]{normal text}%
@@ -193,8 +208,8 @@
       \BTKGetContent{left}%
     }
     % Right text box
-    \coordinate (NCSA@r@nw) at ($(current page.north)+(2pt,-1.07cm)$);
-    \coordinate (NCSA@r@se) at ($(current page.south east)+(-2pt,1.0cm)$);
+    \coordinate (NCSA@r@nw) at ($(NCSA@T@mid)+(\dimexpr\NCSA@A@padC/2\relax,0cm)$);
+    \coordinate (NCSA@r@se) at ($(NCSA@T@ne)+(0cm,-\NCSA@fullbox@height)$);
     \BTKRectMP[fill=none][c][t]{NCSA@r@nw}{NCSA@r@se}{%
       \usebeamercolor[fg]{normal text}%
       \usebeamerfont{normal text}%
@@ -203,11 +218,12 @@
   }
 }
 
-\BTKDefineLayout{img-right}{
-  \NCSA@frame
+\BTKDefineLayout[contentA]{img-rightA}{
+  \NCSA@frameA
   \setbeamertemplate{btk overlay}{
-    \coordinate (NCSA@t1@nw) at ($(current page.north west)+(2pt,-1.07cm)$);
-    \coordinate (NCSA@t1@se) at ($(current page.south east)+(-2pt,1.0cm)$);
+    % Main text box
+    \coordinate (NCSA@t1@nw) at ($(NCSA@t@nw |- NCSA@t@se)+(0pt,-\NCSA@A@padC)$);
+    \coordinate (NCSA@t1@se) at ($(NCSA@t1@nw)+(\NCSA@titleA@length,-\NCSA@fullbox@height)$);
 
     \BTKSetBoxPaddingFromBeamerFont{normal text}
 
@@ -249,20 +265,20 @@
 \BTKSubsectionSlidesfalse  % default off (usually noisy)
 
 % A clean “section slide” layout (no header/footer)
-\BTKDefineLayout{section-slide}{
+\BTKDefineLayout[contentA]{section-slide}{
   \setbeamertemplate{title page}{}
-  \NCSA@footframe
+  \NCSA@footframeA
   \setbeamertemplate{frametitle}{}
   \setbeamertemplate{framesubtitle}{}
   \setbeamertemplate{btk overlay}{
-    \NCSA@topbar{
+    \NCSA@topbarA{
       \usebeamercolor[fg]{frametitle}%
       \usebeamerfont{frametitle}%
       \BTKGetContent{section-title}
     }
     % Main text box
-    \coordinate (NCSA@t1@nw) at ($(current page.north west)+(2pt,-1.07cm)$);
-    \coordinate (NCSA@t1@se) at ($(current page.south east)+(-2pt,1.0cm)$);
+    \coordinate (NCSA@t1@nw) at ($(NCSA@t@nw |- NCSA@t@se)+(0pt,-\NCSA@A@padC)$);
+    \coordinate (NCSA@t1@se) at ($(NCSA@t1@nw)+(\NCSA@titleA@length,-\NCSA@fullbox@height)$);
     \BTKSetBoxPaddingFromBeamerFont{normal text}
     \BTKRectMP[fill=none][c][t]{NCSA@t1@nw}{NCSA@t1@se}{%
       \usebeamercolor[fg]{normal text}%
@@ -274,7 +290,6 @@
 
 % Appendix announce layout (no header/footer, appendix background)
 \BTKDefineLayout{appendix-announce}{
-  \BTKUseBackground{appendix}%
   \setbeamertemplate{title page}{}%
   \setbeamertemplate{footline}{}%
   \setbeamertemplate{frametitle}{}%
@@ -309,10 +324,10 @@
   \fi
 }
 
-\newcommand{\AppendixAnnounce}[1]{%
+\newcommand{\AppendixAnnounce}[2]{%
   \BTKAppendixBegin
-  \begin{frame}[plain,noframenumbering,layout=appendix-announce]
-    \BTKContent{appendix-title}{#1}
+  \begin{frame}[plain,noframenumbering,layout=appendix-announce,bg=#1]
+    \BTKContent{appendix-title}{#2}
   \end{frame}
 }
 
