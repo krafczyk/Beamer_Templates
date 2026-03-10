@@ -272,6 +272,15 @@
 % Overlay environment (power mode)
 % ------------------------------------------------------------
 % This is a nice helper for author code: it creates a TikZ picture with remember picture + overlay, so you can use absolute coordinates and all the anchors defined.
+\AtBeginDocument{%
+  \BTKContent{Overlay}{}%
+}
+
+% Reset Overlay each frame
+\BeforeBeginEnvironment{frame}{%
+  \BTKContent{Overlay}{}%
+}
+
 \newenvironment{BTKOverlay}{%
   \begin{tikzpicture}[remember picture,overlay]%
 }{%
@@ -324,6 +333,7 @@
     \ifBTKAutoOverlay
       \begin{BTKOverlay}%
         \usebeamertemplate{btk overlay}%
+        \BTKGetContent{Overlay}%
         \ifBTKGrid
           \BTKRenderGrid%
         \fi
