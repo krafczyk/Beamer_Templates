@@ -273,6 +273,7 @@
 % ------------------------------------------------------------
 % This is a nice helper for author code: it creates a TikZ picture with remember picture + overlay, so you can use absolute coordinates and all the anchors defined.
 \AtBeginDocument{%
+  \BTKContent{Extra}{}%
   \BTKContent{Overlay}{}%
 }
 
@@ -332,6 +333,7 @@
   \newcommand{\BTKRenderOverlay}{%
     \ifBTKAutoOverlay
       \begin{BTKOverlay}%
+        \BTKGetContent{Extra}%
         \usebeamertemplate{btk overlay}%
         \BTKGetContent{Overlay}%
         \ifBTKGrid

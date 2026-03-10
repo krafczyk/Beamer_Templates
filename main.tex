@@ -14,10 +14,10 @@
 % Use the theme by name (beamerthemencsa.sty must be in theme/)
 \usetheme{ncsa}
 \BTKAppendGraphicPath{figs/}
-\BTKSectionSlidestrue
+\BTKSectionSlidesfalse
 %\BTKSubsectionSlidestrue
-\BTKOutlinetrue % set true to see borders
-\BTKGridtrue % set true to see `1cm` grid.
+%\BTKOutlinetrue % set true to see borders
+%\BTKGridtrue % set true to see `1cm` grid.
 
 \title{Title}
 \author{Author}
@@ -26,6 +26,14 @@
 \begin{document}
 
 \TitleFrame
+
+% Extra content that is displayed on every slide.
+\BTKContent{Extra}{
+\draw[fill=black]
+  ($(current page.south)+(3cm,0cm)+(-0.5cm,1cm)$)
+  rectangle
+  ($(current page.south)+(3cm, 0cm)+(0.5cm,0.5cm)$);
+}
 
 \subimport{content/}{talk.tex}
 
