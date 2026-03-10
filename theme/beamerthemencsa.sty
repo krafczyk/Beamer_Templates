@@ -40,8 +40,11 @@
 \setbeamercolor*{framesubtitle}{fg=ncsablue}
 \setbeamerfont*{framesubtitle}{family=\sffamily,series=\bfseries,size=\normalsize}
 
-\setbeamercolor*{footline}{fg=white}
-\setbeamerfont*{footline}{family=\sffamily,size=\large}
+\setbeamercolor*{footlineA}{fg=white}
+\setbeamerfont*{footlineA}{family=\sffamily,size=\large}
+\setbeamercolor*{footlineB}{fg=ncsablue}
+\setbeamerfont*{footlineB}{family=\sffamily,size=\large}
+
 
 \setbeamercolor*{author}{fg=white}
 \setbeamercolor*{date}{fg=white}
@@ -83,15 +86,19 @@
 \newlength{\NCSA@A@padA}
 \newlength{\NCSA@A@padB}
 \newlength{\NCSA@A@padC}
+\newlength{\NCSA@B@bar}
 \newlength{\NCSA@title@height}
 \newlength{\NCSA@titleA@length}
+\newlength{\NCSA@titleB@length}
 \newlength{\NCSA@fullbox@height}
 
 \setlength{\NCSA@A@padA}{0.5cm} % Horizontal Pad - left and right horizontal
 \setlength{\NCSA@A@padB}{\dimexpr\NCSA@A@padA/2\relax} % vertical pad, upper vertical
 \setlength{\NCSA@A@padC}{0.1cm} % Inter component separator
+\setlength{\NCSA@B@bar}{2.4cm} % horizontal size of right side bar
 \setlength{\NCSA@title@height}{0.8cm}
 \setlength{\NCSA@titleA@length}{\dimexpr\paperwidth-2\NCSA@A@padA\relax}
+\setlength{\NCSA@titleB@length}{\dimexpr\paperwidth-2\NCSA@A@padA-\NCSA@B@bar\relax}
 \setlength{\NCSA@fullbox@height}{6.5cm}
 
 % Install base BTK templates required.
@@ -146,7 +153,21 @@
       \coordinate (NCSA@footnumber@nw) at ($(NCSA@footnumber@se)+(-2cm,0.7cm)$);
       \BTKRectMP[fill=none][c][c]{NCSA@footnumber@nw}{NCSA@footnumber@se}{%
         \centering
-        \usebeamercolor[fg]{footline}\usebeamerfont{footline}\insertframenumber/\insertmainframenumber
+        \usebeamercolor[fg]{footlineA}\usebeamerfont{footlineA}\insertframenumber/\insertmainframenumber
+      }
+    \end{BTKOverlay}
+  }
+}
+
+\newcommand{\NCSA@footframeB}{%
+  \setbeamertemplate{footline}{%
+    \begin{BTKOverlay}
+      % slide numbers box
+      \coordinate (NCSA@footnumber@se) at ($(current page.south east)+(-\NCSA@B@bar,0cm)+(0cm,0.15cm)$);
+      \coordinate (NCSA@footnumber@nw) at ($(NCSA@footnumber@se)+(-2cm,0.7cm)$);
+      \BTKRectMP[fill=none][c][c]{NCSA@footnumber@nw}{NCSA@footnumber@se}{%
+        \centering
+        \usebeamercolor[fg]{footlineB}\usebeamerfont{footlineB}\insertframenumber/\insertmainframenumber
       }
     \end{BTKOverlay}
   }
@@ -155,6 +176,14 @@
 \newcommand{\NCSA@topbarA}[1]{%
   \coordinate (NCSA@t@nw) at ($(current page.north west)+(\NCSA@A@padA,-\NCSA@A@padB)$);
   \coordinate (NCSA@t@se) at ($(NCSA@t@nw)+(\NCSA@titleA@length,-\NCSA@title@height)$);
+  \BTKRectMP[fill=none][c][c]{NCSA@t@nw}{NCSA@t@se}{%
+    #1
+  }
+}
+
+\newcommand{\NCSA@topbarB}[1]{%
+  \coordinate (NCSA@t@nw) at ($(current page.north west)+(\NCSA@A@padA,-\NCSA@A@padB)$);
+  \coordinate (NCSA@t@se) at ($(NCSA@t@nw)+(\NCSA@titleB@length,-\NCSA@title@height)$);
   \BTKRectMP[fill=none][c][c]{NCSA@t@nw}{NCSA@t@se}{%
     #1
   }
@@ -175,12 +204,42 @@
   \setbeamertemplate{framesubtitle}{}
 }
 
+\newcommand{\NCSA@frameB}{%
+  \setbeamertemplate{title page}{}
+  \NCSA@footframeB
+  \setbeamertemplate{frametitle}{%
+    \begin{BTKOverlay}
+      \NCSA@topbarB{
+        \usebeamercolor[fg]{frametitle}%
+        \usebeamerfont{frametitle}%
+        \insertframetitle
+      }
+    \end{BTKOverlay}
+  }
+  \setbeamertemplate{framesubtitle}{}
+}
+
 \BTKDefineLayout[contentA]{fullA}{
   \NCSA@frameA
   \setbeamertemplate{btk overlay}{
     % Main text box
     \coordinate (NCSA@t1@nw) at ($(NCSA@t@nw |- NCSA@t@se)+(0pt,-\NCSA@A@padC)$);
     \coordinate (NCSA@t1@se) at ($(NCSA@t1@nw)+(\NCSA@titleA@length,-\NCSA@fullbox@height)$);
+    \BTKSetBoxPaddingFromBeamerFont{normal text}
+    \BTKRectMP[fill=none][c][t]{NCSA@t1@nw}{NCSA@t1@se}{%
+      \usebeamercolor[fg]{normal text}%
+      \usebeamerfont{normal text}%
+      \BTKGetContent{text}%
+    }
+  }
+}
+
+\BTKDefineLayout[contentB]{fullB}{
+  \NCSA@frameB
+  \setbeamertemplate{btk overlay}{
+    % Main text box
+    \coordinate (NCSA@t1@nw) at ($(NCSA@t@nw |- NCSA@t@se)+(0pt,-\NCSA@A@padC)$);
+    \coordinate (NCSA@t1@se) at ($(NCSA@t1@nw)+(\NCSA@titleB@length,-\NCSA@fullbox@height)$);
     \BTKSetBoxPaddingFromBeamerFont{normal text}
     \BTKRectMP[fill=none][c][t]{NCSA@t1@nw}{NCSA@t1@se}{%
       \usebeamercolor[fg]{normal text}%
@@ -218,12 +277,73 @@
   }
 }
 
+\BTKDefineLayout[contentB]{two-colB}{
+  \NCSA@frameB
+  \setbeamertemplate{btk overlay}{
+    \coordinate (NCSA@T@nw) at ($(NCSA@t@nw |- NCSA@t@se)+(0cm,-\NCSA@A@padC)$);
+    \coordinate (NCSA@T@ne) at ($(NCSA@t@se)+(0cm,-\NCSA@A@padC)$);
+    \coordinate (NCSA@T@mid) at ($(NCSA@T@nw)!0.5!(NCSA@T@ne)$);
+
+    % Left text box
+    \coordinate (NCSA@l@nw) at (NCSA@T@nw);
+    \coordinate (NCSA@l@se) at ($(NCSA@T@mid)+(-\dimexpr\NCSA@A@padC/2\relax,-\NCSA@fullbox@height)$);
+
+    \BTKSetBoxPaddingFromBeamerFont{normal text}
+    \BTKRectMP[fill=none][c][t]{NCSA@l@nw}{NCSA@l@se}{%
+      \usebeamercolor[fg]{normal text}%
+      \usebeamerfont{normal text}%
+      \BTKGetContent{left}%
+    }
+    % Right text box
+    \coordinate (NCSA@r@nw) at ($(NCSA@T@mid)+(\dimexpr\NCSA@A@padC/2\relax,0cm)$);
+    \coordinate (NCSA@r@se) at ($(NCSA@T@ne)+(0cm,-\NCSA@fullbox@height)$);
+    \BTKRectMP[fill=none][c][t]{NCSA@r@nw}{NCSA@r@se}{%
+      \usebeamercolor[fg]{normal text}%
+      \usebeamerfont{normal text}%
+      \BTKGetContent{right}%
+    }
+  }
+}
+
 \BTKDefineLayout[contentA]{img-rightA}{
   \NCSA@frameA
   \setbeamertemplate{btk overlay}{
     % Main text box
     \coordinate (NCSA@t1@nw) at ($(NCSA@t@nw |- NCSA@t@se)+(0pt,-\NCSA@A@padC)$);
     \coordinate (NCSA@t1@se) at ($(NCSA@t1@nw)+(\NCSA@titleA@length,-\NCSA@fullbox@height)$);
+
+    \BTKSetBoxPaddingFromBeamerFont{normal text}
+
+    % defaults if author didn't set them
+    \def\BTK@imgw{\BTKGetOptionOr{img-width}{0.34\linewidth}}
+    \def\BTK@imgside{\BTKGetOptionOr{img-side}{r}}
+    \def\BTK@imgvspace{\BTKGetOptionOr{img-vspace}{-0.5\baselineskip}}
+    \def\BTK@imggap{\BTKGetOptionOr{img-gap}{0.6em}}
+
+    \BTKRectMP[fill=none][c][t]{NCSA@t1@nw}{NCSA@t1@se}{%
+      \usebeamercolor[fg]{normal text}%
+      \usebeamerfont{normal text}%
+
+      % wrapfig uses \columnsep for the text-image gap
+      \setlength{\columnsep}{\BTK@imggap}%
+
+      \begin{wrapfigure}{\BTK@imgside}{\BTK@imgw}
+        \vspace{\BTK@imgvspace}%
+        \centering
+        \BTKGetContent{img}%
+      \end{wrapfigure}
+
+      \BTKGetContent{text}%
+    }
+  }
+}
+
+\BTKDefineLayout[contentB]{img-rightB}{
+  \NCSA@frameB
+  \setbeamertemplate{btk overlay}{
+    % Main text box
+    \coordinate (NCSA@t1@nw) at ($(NCSA@t@nw |- NCSA@t@se)+(0pt,-\NCSA@A@padC)$);
+    \coordinate (NCSA@t1@se) at ($(NCSA@t1@nw)+(\NCSA@titleB@length,-\NCSA@fullbox@height)$);
 
     \BTKSetBoxPaddingFromBeamerFont{normal text}
 
