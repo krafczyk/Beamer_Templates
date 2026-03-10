@@ -285,6 +285,23 @@
 }
 
 % ------------------------------------------------------------
+% Debug grid (1cm spacing)
+% ------------------------------------------------------------
+\newif\ifBTKGrid
+\BTKGridfalse
+\define@key{beamerframe}{btkgrid}[true]{\csname BTKGrid#1\endcsname}
+
+% Style is optional; tweak as you like.
+\tikzset{
+  btk/grid/.style={draw=black!25,line width=0.2pt},
+}
+
+% Must be called *inside* a tikzpicture (e.g. inside BTKOverlay)
+\newcommand{\BTKRenderGrid}{%
+  \draw[btk/grid,step=1cm] (current page.south west) grid (current page.north east);%
+}
+
+% ------------------------------------------------------------
 % BTK beamer templates
 % ------------------------------------------------------------
 
@@ -307,6 +324,9 @@
     \ifBTKAutoOverlay
       \begin{BTKOverlay}%
         \usebeamertemplate{btk overlay}%
+        \ifBTKGrid
+          \BTKRenderGrid%
+        \fi
       \end{BTKOverlay}%
     \fi
   }
