@@ -141,6 +141,31 @@
   }
 \end{frame}
 
+\begin{frame}[layout=fullA]{Full layout with standalone tikz picture}
+
+\BTKContent{text}{
+  \begin{figure}[t]
+  \centering
+  \includestandalone[
+      mode=buildnew,
+      width=\linewidth]{figs/geo_autoencoder}
+  \caption{The autoencoder for learning the geometric latent space $\vec{z}$, $\vec{s}$ is a vector of SDF values measured for an object at the decided-upon probe points within the antenna volume. $\vec{\epsilon}$ is a small gaussian noise vector. $U$ is the geometric encoder model and $U^{-1}$ is it's inverse. An auto-regressive training target used here.}
+  \end{figure}
+}
+\end{frame}
+
+\begin{frame}[layout=fullB]{Full layout with standalone tikz picture}
+\BTKContent{text}{
+\begin{figure}[t]
+  \centering
+  \includestandalone[mode=buildnew,width=\linewidth]{figs/geo_autoencoder}
+  \caption{The autoencoder for learning the geometric latent space $\vec{z}$, $\vec{s}$ is a vector of SDF values measured for an object at the decided-upon probe points within the antenna volume. $\vec{\epsilon}$ is a small gaussian noise vector. $U$ is the geometric encoder model and $U^{-1}$ is it's inverse. An auto-regressive training target used here.}
+\end{figure}
+}
+\end{frame}
+
+
+
 \begin{frame}[layout=blank,bgnone]{Blank master + overlay}
   % Whole page is yours. Demonstrate exposed anchors.
   \BTKContent{Overlay}{
