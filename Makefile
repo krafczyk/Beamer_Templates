@@ -6,12 +6,12 @@ THEME_DIR := theme
 TEXINPUTS_PREFIX := $(THEME_DIR)//:
 
 MAIN      := main.tex
-OUTDIR    := build
+OUTDIR    := .
 ENGINE    ?= lualatex
 # pdflatex | lualatex | xelatex
 
 LATEXMK   := latexmk
-LATEXMK_COMMON := -interaction=nonstopmode -halt-on-error -file-line-error
+LATEXMK_COMMON := -shell-escape -interaction=nonstopmode -halt-on-error -file-line-error
 
 ifeq ($(ENGINE),pdflatex)
   LATEXMK_ENGINE := -pdf
