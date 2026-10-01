@@ -57,12 +57,28 @@
   },
 }
 
-% Setters (store values)
-\NewDocumentCommand{\BTKContent}{m +m}{%
-  % define a real key with code
+% Setters (store values). Frame content is global because the overlay is
+% rendered at shipout, then cleared before the next frame. Extra is persistent.
+\def\BTK@framecontentkeys{}
+\newcommand{\BTK@trackframecontent}[1]{%
+  \ifstrequal{#1}{Extra}{}{%
+    \ifinlist{#1}{\BTK@framecontentkeys}{}{%
+      \listgadd{\BTK@framecontentkeys}{#1}%
+    }%
+  }%
+}
+\NewDocumentCommand{\BTK@storecontent}{m +m}{%
   \begingroup\globaldefs=1
     \pgfkeys{/btk/content/#1/.code={#2}}%
   \endgroup
+}
+\NewDocumentCommand{\BTKContent}{m +m}{%
+  \BTK@trackframecontent{#1}%
+  \BTK@storecontent{#1}{#2}%
+}
+\newcommand{\BTK@clearframecontent}[1]{\BTK@storecontent{#1}{}}
+\newcommand{\BTK@resetframecontent}{%
+  \forlistloop{\BTK@clearframecontent}{\BTK@framecontentkeys}%
 }
 \newcommand{\BTKOption}[2]{%
   \pgfkeyssetvalue{/btk/opt/#1}{#2}%
@@ -193,6 +209,9 @@
 \def\BTK@bgfile{}
 \def\BTK@bgcolor{black}
 \def\BTK@bgopacity{1}
+\newsavebox{\BTK@bgbox}
+\newif\ifBTK@explicitBackground
+\BTK@explicitBackgroundfalse
 
 \newcommand{\BTKUseBackground}[1]{%
   \let\BTK@bgmode\BTK@mode@image%
@@ -223,11 +242,11 @@
 }
 \newcommand{\BTKSetBackgroundOpacity}[1]{\def\BTK@bgopacity{#1}}
 
-\define@key{beamerframe}{bg}{\BTKUseBackground{#1}}
-\define@key{beamerframe}{bgfile}{\BTKUseBackgroundFile{#1}}
-\define@key{beamerframe}{bgcolor}{\BTKUseBackgroundColor{#1}}
+\define@key{beamerframe}{bg}{\BTK@explicitBackgroundtrue\BTKUseBackground{#1}}
+\define@key{beamerframe}{bgfile}{\BTK@explicitBackgroundtrue\BTKUseBackgroundFile{#1}}
+\define@key{beamerframe}{bgcolor}{\BTK@explicitBackgroundtrue\BTKUseBackgroundColor{#1}}
 \define@key{beamerframe}{bgopacity}{\BTKSetBackgroundOpacity{#1}}
-\define@key{beamerframe}{bgnone}[true]{\BTKNoBackground}
+\define@key{beamerframe}{bgnone}[true]{\BTK@explicitBackgroundtrue\BTKNoBackground}
 
 \newcommand{\BTK@drawbackground}{%
   \ifx\BTK@bgmode\BTK@mode@none
@@ -236,8 +255,13 @@
     \fill[fill=\BTK@bgcolor,opacity=\BTK@bgopacity]
       (current page.south west) rectangle (current page.north east);%
   \else
+    \sbox{\BTK@bgbox}{\includegraphics[width=\paperwidth]{\BTK@bgfile}}%
     \node[inner sep=0pt,outer sep=0pt,opacity=\BTK@bgopacity] at (current page.center) {%
-      \includegraphics[width=\paperwidth,keepaspectratio]{\BTK@bgfile}%
+      \ifdim\dimexpr\ht\BTK@bgbox+\dp\BTK@bgbox\relax<\paperheight
+        \includegraphics[height=\paperheight]{\BTK@bgfile}%
+      \else
+        \usebox{\BTK@bgbox}%
+      \fi
     };%
   \fi\fi
 }
@@ -257,13 +281,15 @@
 }
 
 \newcommand{\BTKUseLayout}[1]{%
-  % If /btk/layout/<name>/bg exists and is nonempty, apply it first
-  \pgfkeysifdefined{/btk/layout/#1/bg}{%
-    \edef\BTK@layoutbg{\pgfkeysvalueof{/btk/layout/#1/bg}}%
-    \ifx\BTK@layoutbg\@empty\else
-      \BTKUseBackground{\BTK@layoutbg}%
-    \fi
-  }{}%
+  % Explicit frame backgrounds win regardless of frame-key ordering.
+  \ifBTK@explicitBackground\else
+    \pgfkeysifdefined{/btk/layout/#1/bg}{%
+      \edef\BTK@layoutbg{\pgfkeysvalueof{/btk/layout/#1/bg}}%
+      \ifx\BTK@layoutbg\@empty\else
+        \BTKUseBackground{\BTK@layoutbg}%
+      \fi
+    }{}%
+  \fi
   % Then execute the layout itself; if unknown, /btk/layout/.unknown fires
   \pgfkeys{/btk/layout/#1}%
 }
@@ -277,9 +303,10 @@
   \BTKContent{Overlay}{}%
 }
 
-% Reset Overlay each frame
+% Reset frame-local content and background-selection state before options parse.
 \BeforeBeginEnvironment{frame}{%
-  \BTKContent{Overlay}{}%
+  \BTK@resetframecontent
+  \BTK@explicitBackgroundfalse
 }
 
 \newenvironment{BTKOverlay}{%

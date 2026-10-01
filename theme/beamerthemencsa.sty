@@ -189,34 +189,52 @@
   }
 }
 
+\newcommand{\NCSA@frametitlecontent}{%
+  \usebeamercolor[fg]{frametitle}%
+  \usebeamerfont{frametitle}%
+  \insertframetitle
+  \ifx\insertframesubtitle\@empty\else
+    \par
+    {\usebeamercolor[fg]{framesubtitle}%
+     \usebeamerfont{framesubtitle}%
+     \insertframesubtitle}%
+  \fi
+}
+
+\newcommand{\NCSA@setframegeometry}{%
+  \ifx\insertframesubtitle\@empty
+    \setlength{\NCSA@title@height}{0.8cm}%
+    \setlength{\NCSA@fullbox@height}{6.5cm}%
+  \else
+    \setlength{\NCSA@title@height}{1.25cm}%
+    \setlength{\NCSA@fullbox@height}{6.05cm}%
+  \fi
+}
+
 \newcommand{\NCSA@frameA}{%
   \setbeamertemplate{title page}{}
   \NCSA@footframeA
   \setbeamertemplate{frametitle}{%
+    \NCSA@setframegeometry
     \begin{BTKOverlay}
       \NCSA@topbarA{
-        \usebeamercolor[fg]{frametitle}%
-        \usebeamerfont{frametitle}%
-        \insertframetitle
+        \NCSA@frametitlecontent
       }
     \end{BTKOverlay}
   }
-  \setbeamertemplate{framesubtitle}{}
 }
 
 \newcommand{\NCSA@frameB}{%
   \setbeamertemplate{title page}{}
   \NCSA@footframeB
   \setbeamertemplate{frametitle}{%
+    \NCSA@setframegeometry
     \begin{BTKOverlay}
       \NCSA@topbarB{
-        \usebeamercolor[fg]{frametitle}%
-        \usebeamerfont{frametitle}%
-        \insertframetitle
+        \NCSA@frametitlecontent
       }
     \end{BTKOverlay}
   }
-  \setbeamertemplate{framesubtitle}{}
 }
 
 \BTKDefineLayout[contentA]{fullA}{

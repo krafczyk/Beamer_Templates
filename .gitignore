@@ -6,3 +6,5 @@
 *.out
 *.snm
 *.toc
+/main.pdf
+/figs/geo_autoencoder.pdf

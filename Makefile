@@ -8,19 +8,17 @@ TEXINPUTS_PREFIX := $(THEME_DIR)//:
 MAIN      := main.tex
 OUTDIR    := .
 ENGINE    ?= lualatex
-# pdflatex | lualatex | xelatex
+# lualatex | xelatex
 
 LATEXMK   := latexmk
 LATEXMK_COMMON := -shell-escape -interaction=nonstopmode -halt-on-error -file-line-error
 
-ifeq ($(ENGINE),pdflatex)
-  LATEXMK_ENGINE := -pdf
-else ifeq ($(ENGINE),lualatex)
+ifeq ($(ENGINE),lualatex)
   LATEXMK_ENGINE := -lualatex
 else ifeq ($(ENGINE),xelatex)
   LATEXMK_ENGINE := -xelatex
 else
-  $(error Unknown ENGINE '$(ENGINE)'; use pdflatex|lualatex|xelatex)
+  $(error Unknown ENGINE '$(ENGINE)'; use lualatex|xelatex)
 endif
 
 PDF := $(OUTDIR)/$(basename $(MAIN)).pdf
@@ -45,7 +43,6 @@ clean:
 	$(LATEXMK) -C -outdir=$(OUTDIR) $(MAIN)
 
 distclean: clean
-	-rm -rf $(OUTDIR)
 
 open: pdf
 	@{ command -v xdg-open >/dev/null 2>&1 && xdg-open "$(PDF)" || \
